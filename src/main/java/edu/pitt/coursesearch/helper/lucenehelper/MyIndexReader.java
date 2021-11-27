@@ -2,39 +2,49 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
+import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.BytesRef;
 
-/**
- * A class for reading your index.
- */
-public class IndexReader {
+@Slf4j
+public class MyIndexReader {
     protected File dir;
     private Directory directory;
     private DirectoryReader ireader;
     private IndexSearcher isearcher;
 
-    public IndexReader( String dataType ) throws IOException {
-//        if (dataType.equals("trectext")) {
-//            directory = FSDirectory.open(Paths.get(Classes.Path.IndexTextDir));
-//        } else {
-//            directory = FSDirectory.open(Paths.get(Classes.Path.IndexWebDir));
-//        }
-//        ireader = DirectoryReader.open(directory);
-//        isearcher = new IndexSearcher(ireader);
+    private IndexReader indexReader;
+    private final IndexSearcher searcher;
+    private final Analyzer analyzer;
+    private Query query;
+    private final AzureBlob azureBlob;
+    private String search;
+
+    private MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
+        this.azureBlob = azureBlob;
+        this.analyzer = analyzer;
+        try {
+            this.indexReader = DirectoryReader.open(ramDirectory);
+        } catch (IOException e) {
+            log.error("unable to create index reader because of" + e.getMessage());
+        }
+
+        if (this.indexReader == null) {
+            throw new NullPointerException("unable to find indexReader");
+        }
+
+        this.searcher = new IndexSearcher(this.indexReader);
     }
 
     /**
