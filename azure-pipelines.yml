@@ -20,11 +20,3 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
-
-- task: AzureRmWebAppDeployment@4
-  displayName: 'Azure App Service Deploy: courseSearchAPI'
-  inputs:
-    azureSubscription: 'Azure for Students (e3689a5a-c094-46bb-826c-9c670b599054)'
-    WebAppName: courseSearchAPI
-
-- task: PublishBuildArtifacts@1
