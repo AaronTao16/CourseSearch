@@ -2,24 +2,21 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
-import edu.pitt.coursesearch.model.Document;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.core.StopAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
-import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class MyNormalize {
@@ -41,40 +38,46 @@ public class MyNormalize {
         List<String> blobNames = this.blobReader.getAllFileNames();
 
         blobNames.stream().parallel().forEach(name -> {
-            if(!name.equals("test.json"))  return;
-            JSONArray jsonArray;
             List<String> collections = new ArrayList<>();
 
             try {
-                jsonArray = new JSONArray(this.blobReader.readFiles(name));
+                JSONObject jsonObject = new JSONObject(this.blobReader.readFiles(name));
 
-                for (int i = 0; i < jsonArray.length(); i++) {
+                for (int i = 0; i < jsonObject.names().length(); i++) {
                     List<String> content = new ArrayList<>();
-                    content.add(jsonArray.getJSONObject(i).get("id").toString());
-                    content.add(((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("dept").toString());
-                    content.add(((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("number").toString());
-                    content.add(jsonArray.getJSONObject(i).get("description").toString());
-                    content.add(jsonArray.getJSONObject(i).get("instructor").toString());
-                    JSONArray section = jsonArray.getJSONObject(i).getJSONArray("sections");
+                    String id = (String) jsonObject.names().get(i);
+                    JSONObject course = (JSONObject) jsonObject.get(id);
+                    content.add(id);
+                    content.add(((JSONObject)course.get("courseCode")).get("dept").toString());
+                    content.add(((JSONObject)course.get("courseCode")).get("number").toString());
+                    content.add(course.get("description").toString());
+                    content.add(course.get("instructor").toString());
+                    content.add(course.get("instructor").toString().equals("false")? "undergraduate" : "graduate");
+                    JSONArray section = course.getJSONArray("sections");
                     for(int j = 0; j < section.length(); j++){
                         content.add(section.getJSONObject(j).get("classNumber").toString());
-                        content.add(section.getJSONObject(j).get("beginTime").toString());
-                        content.add(section.getJSONObject(j).get("endTime").toString());
+//                        content.add(section.getJSONObject(j).get("beginTime").toString());
+//                        content.add(section.getJSONObject(j).get("endTime").toString());
                         content.add(section.getJSONObject(j).get("sectionType").toString());
-                        content.add(section.getJSONObject(j).get("building").toString());
-                        content.add(section.getJSONObject(j).get("room").toString());
+//                        content.add(section.getJSONObject(j).get("building").toString());
+//                        content.add(section.getJSONObject(j).get("room").toString());
                     }
 
+//                    collections.add(jsonArray.getJSONObject(i).get("id").toString() + "\n");
+//                    collections.add(((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("dept").toString() + " " + ((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("number").toString() + "\n");
+
                     TokenStream tokenStream  = this.analyzer.tokenStream("content", new StringReader(content.toString()));
+                    tokenStream = new StopFilter(tokenStream, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//                    tokenStream = new PorterStemFilter(tokenStream);
                     tokenStream.reset();
                     while (tokenStream.incrementToken()) {
-                        collections.add(tokenStream.getAttribute(CharTermAttribute.class).toString());
+                        collections.add(tokenStream.getAttribute(CharTermAttribute.class).toString().trim());
                     }
                     collections.add("\n");
                     tokenStream.close();
                 }
 
-                String fileContent = collections.toString().replaceAll(",", "");
+                String fileContent = collections.toString().replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", "");
                 this.blobWriter.uploadFiles(String.format("after_normalize_%s", name), fileContent);
 
             } catch (Exception e) {
