@@ -74,7 +74,7 @@ public class MyIndexWriter {
 
     private void getAllDocuments(List<String> allFileNames) {
         allFileNames.stream().parallel().forEach(fileName -> {
-            log.info(fileName);
+//            log.info(fileName);
             if(!fileName.equals("after_normalize_data.json")) return;
             String content = null;
             try {
@@ -102,7 +102,7 @@ public class MyIndexWriter {
         try {
             this.indexWriter.close();
         } catch (IOException e) {
-            log.error("unable to close writer");
+//            log.error("unable to close writer");
         } finally {
             System.gc();
         }

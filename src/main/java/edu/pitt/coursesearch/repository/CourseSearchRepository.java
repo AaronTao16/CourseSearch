@@ -31,7 +31,7 @@ public class CourseSearchRepository {
         try {
             Query q = new QueryParser("content", analyzer).parse(query);
             IndexSearcher searcher = new IndexSearcher(myIndexReader.getIndexReader());
-            TopDocs docs = searcher.search(q, 10);
+            TopDocs docs = searcher.search(q, 30);
 
             ScoreDoc[] hits = docs.scoreDocs;
             for(int i=0;i<hits.length;++i) {
@@ -44,8 +44,6 @@ public class CourseSearchRepository {
             e.printStackTrace();
         }
 
-
         return res;
-//        return myIndexReader.searchDocument(query, 10);
     }
 }
