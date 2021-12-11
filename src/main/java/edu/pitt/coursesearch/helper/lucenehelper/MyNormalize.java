@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
@@ -66,7 +65,7 @@ public class MyNormalize {
 //                    collections.add(((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("dept").toString() + " " + ((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("number").toString() + "\n");
 
                     TokenStream tokenStream  = this.analyzer.tokenStream("content", new StringReader(content.toString()));
-                    tokenStream = new StopFilter(tokenStream, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//                    tokenStream = new StopFilter(tokenStream, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
 //                    tokenStream = new PorterStemFilter(tokenStream);
                     tokenStream.reset();
                     while (tokenStream.incrementToken()) {

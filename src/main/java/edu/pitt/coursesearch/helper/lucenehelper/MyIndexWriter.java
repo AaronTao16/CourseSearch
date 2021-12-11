@@ -12,6 +12,10 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.RAMDirectory;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -74,27 +78,62 @@ public class MyIndexWriter {
 
     private void getAllDocuments(List<String> allFileNames) {
         allFileNames.stream().parallel().forEach(fileName -> {
-//            log.info(fileName);
-            if(!fileName.equals("after_normalize_data.json")) return;
-            String content = null;
+            if(!fileName.equals("data.json")) return;
+
             try {
-                content = this.azureBlob.readFiles(fileName);
-                OriginalList = Arrays.asList(content.split("\n"));
-            } catch (URISyntaxException | StorageException | IOException e) {
+                JSONObject jsonObject = new JSONObject(this.azureBlob.readFiles(fileName));
+
+                for (int i = 0; i < jsonObject.names().length(); i++) {
+                    StringBuilder content = new StringBuilder();
+                    Document document = new Document();
+
+                    String id = (String) jsonObject.names().get(i);
+                    JSONObject course = (JSONObject) jsonObject.get(id);
+                    String name = course.get("name").toString();
+                    String courseDep = ((JSONObject) course.get("courseCode")).get("dept").toString();
+                    String courseNum = ((JSONObject) course.get("courseCode")).get("number").toString();
+                    String courseInstructor = course.get("instructor").toString();
+                    String grad = course.get("grad").toString().equals("false") ? "undergraduate" : "graduate";
+                    String des = course.get("description").toString();
+                    content.append(name).append(" ");
+                    content.append(courseDep).append(" ");
+                    content.append(courseNum).append(" ");
+                    content.append(des).append(" ");
+                    content.append(courseInstructor).append(" ");
+                    content.append(grad).append(" ");
+
+                    JSONArray section = course.getJSONArray("sections");
+                    for (int j = 0; j < section.length(); j++) {
+                        String classNumber = section.getJSONObject(j).get("classNumber").toString();
+                        String days = section.getJSONObject(j).get("days").toString();
+                        String beginTime = section.getJSONObject(j).get("beginTime").toString();
+                        String endTime = section.getJSONObject(j).get("endTime").toString();
+                        String sectionType = section.getJSONObject(j).get("sectionType").toString();
+                        String building = section.getJSONObject(j).get("building").toString();
+                        String room = section.getJSONObject(j).get("room").toString();
+                        content.append(classNumber).append(" ");
+                        content.append(days).append(" ");
+                        content.append(beginTime).append(" ");
+                        content.append(endTime).append(" ");
+                        content.append(sectionType).append(" ");
+                        content.append(building).append(" ");
+                        content.append(room).append(" ");
+                    }
+
+                    document.add(new TextField("id", id, Field.Store.YES));
+                    document.add(new TextField("title", courseDep + " " + courseNum, Field.Store.YES));
+                    document.add(new TextField("name", name, Field.Store.YES));
+                    document.add(new TextField("instructor", courseInstructor, Field.Store.YES));
+//                    document.add(new TextField("grad", grad, Field.Store.YES));
+                    document.add(new TextField("content", content.toString(), Field.Store.YES));
+                    document.add(new TextField("course", course.toString(), Field.Store.YES));
+
+                    this.documentList.add(document);
+
+                }
+            } catch (URISyntaxException | StorageException | IOException | JSONException e) {
                 e.printStackTrace();
             }
-            // initiate a doc object, which can hold document number and document content of a document
-            Map<String, String> doc = null;
-
-            Iterator<String> iterator = OriginalList.iterator();
-
-            while((doc = nextDocument(iterator)) != null){
-                Document document = new Document();
-                document.add(new TextField("id", doc.get("id"), Field.Store.YES));
-                document.add(new TextField("content", doc.get("content"), Field.Store.YES));
-                this.documentList.add(document);
-            }
-
         });
     }
 
