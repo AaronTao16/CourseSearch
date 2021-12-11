@@ -2,8 +2,6 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
-import edu.pitt.coursesearch.model.CourseSection;
-import edu.pitt.coursesearch.model.MyDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
