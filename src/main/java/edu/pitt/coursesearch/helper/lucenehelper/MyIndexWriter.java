@@ -2,6 +2,8 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
+import edu.pitt.coursesearch.model.CourseSection;
+import edu.pitt.coursesearch.model.MyDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -12,6 +14,10 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.RAMDirectory;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -37,7 +43,6 @@ public class MyIndexWriter {
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
         indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
-        System.out.println(ramDirectory);
         this.indexWriter = new IndexWriter(ramDirectory, indexWriterConfig);
         type = new FieldType();
         type.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
@@ -74,26 +79,82 @@ public class MyIndexWriter {
 
     private void getAllDocuments(List<String> allFileNames) {
         allFileNames.stream().parallel().forEach(fileName -> {
-//            log.info(fileName);
-            if(!fileName.equals("after_normalize_data.json")) return;
-            String content = null;
+            if(!fileName.equals("data.json")) return;
+
             try {
-                content = this.azureBlob.readFiles(fileName);
-                OriginalList = Arrays.asList(content.split("\n"));
-            } catch (URISyntaxException | StorageException | IOException e) {
+                JSONObject jsonObject = new JSONObject(this.azureBlob.readFiles(fileName));
+
+                for (int i = 0; i < jsonObject.names().length(); i++) {
+                    List<String> content = new ArrayList<>();
+                    Document document = new Document();
+
+                    String id = (String) jsonObject.names().get(i);
+                    JSONObject course = (JSONObject) jsonObject.get(id);
+                    String name = course.get("name").toString().trim();
+                    String courseDep = ((JSONObject) course.get("courseCode")).get("dept").toString().trim();
+                    String courseNum = ((JSONObject) course.get("courseCode")).get("number").toString().trim();
+                    String courseInstructor = course.get("instructor").toString().trim();
+                    String grad = course.get("grad").toString().equals("false") ? "undergraduate" : "graduate";
+                    String des = course.get("description").toString().trim();
+                    content.add(name);
+                    content.add(courseDep);
+                    content.add(courseNum);
+                    content.add(des);
+                    content.add(courseInstructor);
+                    content.add(grad);
+
+                    JSONArray section = course.getJSONArray("sections");
+                    for (int j = 0; j < section.length(); j++) {
+                        String classNumber = section.getJSONObject(j).get("classNumber").toString();
+                        String days = section.getJSONObject(j).get("days").toString();
+                        String beginTime = section.getJSONObject(j).get("beginTime").toString();
+                        String endTime = section.getJSONObject(j).get("endTime").toString();
+                        String sectionType = section.getJSONObject(j).get("sectionType").toString();
+                        String building = section.getJSONObject(j).get("building").toString();
+                        String room = section.getJSONObject(j).get("room").toString();
+                        content.add(classNumber);
+                        content.add(days);
+                        content.add(beginTime);
+                        content.add(endTime);
+                        content.add(sectionType);
+                        content.add(building);
+                        content.add(room);
+                    }
+
+                    document.add(new TextField("id", id, Field.Store.YES));
+                    document.add(new TextField("title", courseDep + " " + courseNum, Field.Store.YES));
+                    document.add(new TextField("name", name, Field.Store.YES));
+                    document.add(new TextField("instructor", courseInstructor, Field.Store.YES));
+                    document.add(new TextField("grad", grad, Field.Store.YES));
+                    document.add(new TextField("content", content.toString().replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", ""), Field.Store.YES));
+                    document.add(new TextField("course", course.toString(), Field.Store.YES));
+
+                    this.documentList.add(document);
+
+                }
+            } catch (URISyntaxException | StorageException | IOException | JSONException e) {
                 e.printStackTrace();
             }
-            // initiate a doc object, which can hold document number and document content of a document
-            Map<String, String> doc = null;
 
-            Iterator<String> iterator = OriginalList.iterator();
 
-            while((doc = nextDocument(iterator)) != null){
-                Document document = new Document();
-                document.add(new TextField("id", doc.get("id"), Field.Store.YES));
-                document.add(new TextField("content", doc.get("content"), Field.Store.YES));
-                this.documentList.add(document);
-            }
+//            String content = null;
+//            try {
+//                content = this.azureBlob.readFiles(fileName);
+//                OriginalList = Arrays.asList(content.split("\n"));
+//            } catch (URISyntaxException | StorageException | IOException e) {
+//                e.printStackTrace();
+//            }
+//            // initiate a doc object, which can hold document number and document content of a document
+//            Map<String, String> doc = null;
+//
+//            Iterator<String> iterator = OriginalList.iterator();
+//
+//            while((doc = nextDocument(iterator)) != null){
+//                Document document = new Document();
+//                document.add(new TextField("id", doc.get("id"), Field.Store.YES));
+//                document.add(new TextField("content", doc.get("content"), Field.Store.YES));
+//                this.documentList.add(document);
+//            }
 
         });
     }
