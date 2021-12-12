@@ -2,7 +2,6 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
-import edu.pitt.coursesearch.model.CourseSection;
 import edu.pitt.coursesearch.model.MyDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
@@ -39,20 +38,25 @@ public class MyIndexWriter {
         this.ramDirectory = ramDirectory;
         this.documentList = new ArrayList<>();
         this.OriginalList = new ArrayList<>();
-
+        // configure IndexWriter to use StandardAnalyzer
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
+        // create or overwrite index
         indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
+        // create IndexWriter instance (in-memory index)
         this.indexWriter = new IndexWriter(ramDirectory, indexWriterConfig);
+        // configure default field options (does this work?)g
         type = new FieldType();
         type.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
         type.setStored(false);
         type.setStoreTermVectors(true);
     }
 
+    // main index routine
     public void createIndex () {
+        // process corpus
         getAllDocuments(azureBlob.getAllFileNames());
 
+        // add documents to indexer
         this.documentList.parallelStream().forEach(document -> {
             try {
                 this.indexWriter.addDocument(document);
@@ -77,6 +81,7 @@ public class MyIndexWriter {
         return doc;
     }
 
+    // process corpus JSON into Lucene documents
     private void getAllDocuments(List<String> allFileNames) {
         allFileNames.stream().parallel().forEach(fileName -> {
             if(!fileName.equals("data.json")) return;
@@ -87,7 +92,7 @@ public class MyIndexWriter {
                 for (int i = 0; i < jsonObject.names().length(); i++) {
                     List<String> content = new ArrayList<>();
                     Document document = new Document();
-
+                    // parse JSON
                     String id = (String) jsonObject.names().get(i);
                     JSONObject course = (JSONObject) jsonObject.get(id);
                     String name = course.get("name").toString().trim();
@@ -102,7 +107,7 @@ public class MyIndexWriter {
                     content.add(des);
                     content.add(courseInstructor);
                     content.add(grad);
-
+                    // special handling for sections
                     JSONArray section = course.getJSONArray("sections");
                     for (int j = 0; j < section.length(); j++) {
                         String classNumber = section.getJSONObject(j).get("classNumber").toString();
@@ -120,7 +125,7 @@ public class MyIndexWriter {
                         content.add(building);
                         content.add(room);
                     }
-
+                    // create Lucene documents, set indexing options
                     document.add(new TextField("id", id, Field.Store.YES));
                     document.add(new TextField("title", courseDep + " " + courseNum, Field.Store.YES));
                     document.add(new TextField("name", name, Field.Store.YES));

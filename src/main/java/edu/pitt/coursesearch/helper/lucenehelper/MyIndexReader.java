@@ -30,6 +30,7 @@ public class MyIndexReader {
     private Query query;
     private final AzureBlob azureBlob;
 
+    // instantiate reader
     public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
         this.azureBlob = azureBlob;
         this.analyzer = analyzer;
@@ -45,19 +46,24 @@ public class MyIndexReader {
         this.searcher = new IndexSearcher(this.indexReader);
     }
 
+    // main search function
+    // searches a specific document field
     public Map<String, JSONObject> searchDocument(String query, String field, int topK) {
         Map<String, JSONObject> res = new HashMap<>();
 
         try {
+            // parse query, search
             this.query = new QueryParser(field, analyzer).parse(query);
             TopDocs topDocs = this.searcher.search(this.query, topK);
             ScoreDoc[] hits = topDocs.scoreDocs;
 
             for(int i=0;i<hits.length;++i) {
-                int docId = hits[i].doc;
-                Document d = searcher.doc(docId);
+                int docId = hits[i].doc;    // lucene docID
+                Document d = searcher.doc(docId);   // get stored fields for doc
                 JSONObject jsonObject = new JSONObject(d.get("course"));
+                // add score to document data
                 jsonObject.put("score", hits[i].score);
+                // add stored fields for document to result, indexed by course ID
                 res.put(d.get("id"), jsonObject);
                 System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("content"));
             }
