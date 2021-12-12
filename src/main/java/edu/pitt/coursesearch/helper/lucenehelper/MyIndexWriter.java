@@ -6,10 +6,7 @@ import edu.pitt.coursesearch.model.Course;
 import edu.pitt.coursesearch.model.Section;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -145,15 +142,17 @@ public class MyIndexWriter {
                     response.put(newCourse.getId(), newCourse);
 
                     // create Lucene documents, set indexing options
-                    // TODO
-/*                    document.add(new TextField("id", id, Field.Store.YES));
-                    document.add(new TextField("title", courseDep + " " + courseNum, Field.Store.YES));
-                    document.add(new TextField("name", name, Field.Store.YES));
-                    document.add(new TextField("instructor", courseInstructor, Field.Store.YES));
-                    document.add(new TextField("grad", grad, Field.Store.YES));
-                    document.add(new TextField("content", content.toString().replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", ""), Field.Store.YES));
-                    document.add(new TextField("course", course.toString(), Field.Store.YES));
-                    this.documentList.add(document);*/
+                    // indexes course text fields and course number but does not store full text in index
+                    // id stored in index can be used to retrieve full Course data from cache
+                    Document document = new Document();
+                    document.add(new StoredField("id", newCourse.getId())); // needed in index but not searched
+                    document.add(new TextField("dept", newCourse.getDept(), Field.Store.NO));
+                    document.add(new IntPoint("number", newCourse.getNumber()));    // not stored
+                    document.add(new TextField("name", newCourse.getName(), Field.Store.NO));
+                    document.add(new TextField("description", newCourse.getDescription(), Field.Store.NO));
+                    document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
+
+                    this.documentList.add(document);
 
                 }
             } catch (URISyntaxException | StorageException | IOException | JSONException e) {
