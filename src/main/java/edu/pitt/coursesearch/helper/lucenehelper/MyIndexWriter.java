@@ -96,7 +96,7 @@ public class MyIndexWriter {
                 Document document = new Document();
                 document.add(new TextField("id", doc.get("id"), Field.Store.YES));
                 document.add(new TextField("content", doc.get("content"), Field.Store.YES));
-//                document.add(new TextField("course", doc.get("course"), Field.Store.YES));
+                document.add(new TextField("course", doc.get("course"), Field.Store.YES));
                 this.documentList.add(document);
             }
 

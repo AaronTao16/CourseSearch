@@ -71,14 +71,14 @@ public class MyIndexReader {
             for(int i=0;i<hits.length;++i) {
                 int docId = hits[i].doc;
                 Document d = searcher.doc(docId);
-//                JSONObject jsonObject = new JSONObject(d.get("course"));
-//                jsonObject.put("score", hits[i].score);
-//                res.put(d.get("id"), jsonObject);
+                JSONObject jsonObject = new JSONObject(d.get("course"));
+                jsonObject.put("score", hits[i].score);
+                res.put(d.get("id"), jsonObject);
 //                res.put(d.get("id"), hits[i].score);
                 System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("content"));
             }
 
-        } catch (IOException | ParseException e) {
+        } catch (IOException | ParseException | JSONException e) {
             e.printStackTrace();
         }
         return res;
