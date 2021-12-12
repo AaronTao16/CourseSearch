@@ -43,7 +43,7 @@ public class CourseSearchApplication {
 //        MyNormalize myNormalize = new MyNormalize(this.connectionKey, this.containerName, this.containerNameAfterIndex, analyzer);
 //        myNormalize.normalize();
 
-        AzureBlob azureBlobAfterNormalize = new AzureBlob(this.connectionKey, this.containerName);
+        AzureBlob azureBlobAfterNormalize = new AzureBlob(this.connectionKey, this.containerNameAfterIndex);
         MyIndexWriter myIndexWriter = new MyIndexWriter(azureBlobAfterNormalize, ramDirectory, analyzer);
         myIndexWriter.createIndex();
 

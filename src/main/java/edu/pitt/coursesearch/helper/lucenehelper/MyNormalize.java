@@ -43,39 +43,54 @@ public class MyNormalize {
 
                 for (int i = 0; i < jsonObject.names().length(); i++) {
                     List<String> content = new ArrayList<>();
+
                     String id = (String) jsonObject.names().get(i);
                     JSONObject course = (JSONObject) jsonObject.get(id);
+                    String courseName = course.get("name").toString();
+                    String courseDep = ((JSONObject) course.get("courseCode")).get("dept").toString();
+                    String courseNum = ((JSONObject) course.get("courseCode")).get("number").toString();
+                    String courseInstructor = course.get("instructor").toString();
+                    String grad = course.get("grad").toString().equals("false") ? "undergraduate" : "graduate";
+                    String des = course.get("description").toString();
                     content.add(id);
-                    content.add(((JSONObject)course.get("courseCode")).get("dept").toString());
-                    content.add(((JSONObject)course.get("courseCode")).get("number").toString());
-                    content.add(course.get("description").toString());
-                    content.add(course.get("instructor").toString());
-                    content.add(course.get("instructor").toString().equals("false")? "undergraduate" : "graduate");
+                    content.add(courseName);
+                    content.add(courseDep);
+                    content.add(courseNum);
+                    content.add(des);
+                    content.add(courseInstructor);
+                    content.add(grad);
+
                     JSONArray section = course.getJSONArray("sections");
                     for(int j = 0; j < section.length(); j++){
-                        content.add(section.getJSONObject(j).get("classNumber").toString());
-//                        content.add(section.getJSONObject(j).get("beginTime").toString());
-//                        content.add(section.getJSONObject(j).get("endTime").toString());
-                        content.add(section.getJSONObject(j).get("sectionType").toString());
-//                        content.add(section.getJSONObject(j).get("building").toString());
-//                        content.add(section.getJSONObject(j).get("room").toString());
+                        String classNumber = section.getJSONObject(j).get("classNumber").toString();
+                        String days = section.getJSONObject(j).get("days").toString();
+                        String beginTime = section.getJSONObject(j).get("beginTime").toString();
+                        String endTime = section.getJSONObject(j).get("endTime").toString();
+                        String sectionType = section.getJSONObject(j).get("sectionType").toString();
+                        String building = section.getJSONObject(j).get("building").toString();
+                        String room = section.getJSONObject(j).get("room").toString();
+                        content.add(classNumber);
+                        content.add(days);
+                        content.add(beginTime);
+                        content.add(endTime);
+                        content.add(sectionType);
+                        content.add(building);
+                        content.add(room);
                     }
 
-//                    collections.add(jsonArray.getJSONObject(i).get("id").toString() + "\n");
-//                    collections.add(((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("dept").toString() + " " + ((JSONObject)jsonArray.getJSONObject(i).get("courseCode")).get("number").toString() + "\n");
-
                     TokenStream tokenStream  = this.analyzer.tokenStream("content", new StringReader(content.toString()));
-//                    tokenStream = new StopFilter(tokenStream, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-//                    tokenStream = new PorterStemFilter(tokenStream);
+
                     tokenStream.reset();
                     while (tokenStream.incrementToken()) {
                         collections.add(tokenStream.getAttribute(CharTermAttribute.class).toString().trim());
                     }
                     collections.add("\n");
+//                    System.out.println((course.toString()));
+                    collections.add(course.toString().replaceAll(",", "|") + "\n");
                     tokenStream.close();
                 }
 
-                String fileContent = collections.toString().replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", "");
+                String fileContent = collections.toString().replaceAll(",", "").substring(1,collections.size()-1);
                 this.blobWriter.uploadFiles(String.format("after_normalize_%s", name), fileContent);
 
             } catch (Exception e) {
