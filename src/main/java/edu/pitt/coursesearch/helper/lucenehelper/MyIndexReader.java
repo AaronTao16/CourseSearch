@@ -1,9 +1,11 @@
 package edu.pitt.coursesearch.helper.lucenehelper;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
@@ -30,6 +32,9 @@ public class MyIndexReader {
     private Query query;
     private final AzureBlob azureBlob;
 
+    public Map<String, String> course;
+    public List<String> OriginalList;
+
     public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
         this.azureBlob = azureBlob;
         this.analyzer = analyzer;
@@ -43,6 +48,28 @@ public class MyIndexReader {
             throw new NullPointerException("unable to find indexReader");
         }
         this.searcher = new IndexSearcher(this.indexReader);
+
+        course = new HashMap<>();
+        OriginalList = new ArrayList<>();
+
+        readData();
+//        System.out.println(course);
+    }
+
+    private void readData() {
+        try {
+            String content = azureBlob.readFiles("after_normalize_original");
+            OriginalList = Arrays.asList(content.split("\n"));
+            for(String c: OriginalList){
+                String[] list = c.split(" ");
+                course.put(list[0].trim(), Arrays.stream(list).skip(1).collect(Collectors.joining(" ")));
+                if(list[0].trim().equals("16")){
+                    System.out.println(Arrays.stream(list).skip(1).collect(Collectors.joining(" ")));
+                }
+            }
+        } catch (URISyntaxException | StorageException | IOException e ){
+
+        }
     }
 
     public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
@@ -59,8 +86,8 @@ public class MyIndexReader {
         return myIndexReader;
     }
 
-    public Map<String, JSONObject> searchDocument(String query, String field, int topK) {
-        Map<String, JSONObject> res = new HashMap<>();
+    public Map<String, String> searchDocument(String query, String field, int topK) {
+        Map<String, String> res = new LinkedHashMap<>();
 
         try {
             this.query = new QueryParser(field, analyzer).parse(query);
@@ -71,14 +98,14 @@ public class MyIndexReader {
             for(int i=0;i<hits.length;++i) {
                 int docId = hits[i].doc;
                 Document d = searcher.doc(docId);
-                JSONObject jsonObject = new JSONObject(d.get("course"));
-                jsonObject.put("score", hits[i].score);
+                String jsonObject = course.get(d.get("id"));
+//                jsonObject.put("score", hits[i].score);
                 res.put(d.get("id"), jsonObject);
 //                res.put(d.get("id"), hits[i].score);
                 System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("content"));
             }
 
-        } catch (IOException | ParseException | JSONException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
         return res;

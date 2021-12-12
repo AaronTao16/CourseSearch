@@ -79,7 +79,7 @@ public class MyIndexWriter {
     private void getAllDocuments(List<String> allFileNames) {
         allFileNames.stream().parallel().forEach(fileName -> {
 //            log.info(fileName);
-//            if(!fileName.equals("after_normalize_data.json")) return;
+            if(!fileName.equals("after_normalize_data.json")) return;
             String content = null;
             try {
                 content = this.azureBlob.readFiles(fileName);
@@ -96,7 +96,7 @@ public class MyIndexWriter {
                 Document document = new Document();
                 document.add(new TextField("id", doc.get("id"), Field.Store.YES));
                 document.add(new TextField("content", doc.get("content"), Field.Store.YES));
-                document.add(new TextField("course", doc.get("course"), Field.Store.YES));
+//                document.add(new TextField("course", doc.get("course"), Field.Store.YES));
                 this.documentList.add(document);
             }
 

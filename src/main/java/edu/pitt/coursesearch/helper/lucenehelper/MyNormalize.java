@@ -37,6 +37,7 @@ public class MyNormalize {
 
         blobNames.stream().parallel().forEach(name -> {
             List<String> collections = new ArrayList<>();
+            List<String> original = new ArrayList<>();
 
             try {
                 JSONObject jsonObject = new JSONObject(this.blobReader.readFiles(name));
@@ -86,13 +87,12 @@ public class MyNormalize {
                     }
                     collections.add("\n");
 //                    System.out.println((course.toString()));
-                    collections.add(course.toString().replaceAll(",", "|") + "\n");
+                    original.add(id + " " + course.toString() + "\n");
                     tokenStream.close();
                 }
 
-                String fileContent = collections.toString().replaceAll(",", "").substring(1,collections.size()-1);
-                this.blobWriter.uploadFiles(String.format("after_normalize_%s", name), fileContent);
-
+                this.blobWriter.uploadFiles(String.format("after_normalize_%s", name), String.join("", collections));
+                this.blobWriter.uploadFiles(String.format("after_normalize_%s", "original"), String.join("", original));
             } catch (Exception e) {
                 e.printStackTrace();
             }
