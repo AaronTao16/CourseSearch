@@ -15,7 +15,7 @@ public class CourseSearchService {
     @Autowired
     CourseSearchRepository courseSearchRepository;
 
-    public Map<String, JSONObject> getSearchResult(String query, String field) { return courseSearchRepository.getSearchResult(query, field); }
+    public Map<String, String > getSearchResult(String query, String field) { return courseSearchRepository.getSearchResult(query, field); }
 
-    public Map<String, JSONObject> getInstructorSearchRes(String query, String field) {return courseSearchRepository.getInstructorSearchRes(query, field);}
+    /*public Map<String, JSONObject> getInstructorSearchRes(String query, String field) {return courseSearchRepository.getInstructorSearchRes(query, field);}*/
 }

@@ -17,11 +17,11 @@ public class CourseSearchRepository {
 
     private MyIndexReader myIndexReader = MyIndexReader.getInstance();
 
-    public Map<String, JSONObject> getSearchResult(String query, String field) {
+    public Map<String, String> getSearchResult(String query, String field) {
         return myIndexReader.searchDocument(query, field, 30);
     }
 
-    public Map<String, JSONObject> getInstructorSearchRes(String query, String field){
+/*    public Map<String, JSONObject> getInstructorSearchRes(String query, String field){
         return myIndexReader.searchDocument(query, field, 30);
-    }
+    }*/
 }

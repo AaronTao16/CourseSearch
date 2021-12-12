@@ -22,19 +22,19 @@ public class CourseController {
     @GetMapping("/search")
     public String Query(@RequestParam("query") final String query){
         StringBuilder result = new StringBuilder();
-        for (Map.Entry<String, JSONObject> map: courseSearchService.getSearchResult(query, "content").entrySet()){
-            result.append(map.getKey()).append(": ").append(map.getValue()).append("\n");
+        for (Map.Entry<String, String> map: courseSearchService.getSearchResult(query, "content").entrySet()){
+            result.append(map.getValue()).append("\n");
         }
         return result.toString();
     }
 
-    @GetMapping("/searchInstructor")
+/*    @GetMapping("/searchInstructor")
     public String QueryInstructor(@RequestParam("instructor") final String query){
         StringBuilder result = new StringBuilder();
         for (Map.Entry<String, JSONObject> map: courseSearchService.getInstructorSearchRes(query, "instructor").entrySet()){
             result.append(map.getKey()).append(": ").append(map.getValue().toString()).append("\n");
         }
         return result.toString();
-    }
+    }*/
 
 }

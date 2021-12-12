@@ -55,8 +55,8 @@ public class MyIndexReader {
 
     // main search function
     // searches a specific document field
-    public Map<String, JSONObject> searchDocument(String query, String field, int topK) {
-        Map<String, JSONObject> res = new HashMap<>();
+    public Map<String, String> searchDocument(String query, String field, int topK) {
+        Map<String, String> res = new HashMap<>();
 
         try {
             // parse query, search
@@ -66,16 +66,16 @@ public class MyIndexReader {
 
             for(int i=0;i<hits.length;++i) {
                 int docId = hits[i].doc;    // lucene docID
-                Document d = searcher.doc(docId);   // get stored fields for doc
-                JSONObject jsonObject = new JSONObject(d.get("course"));
-                // add score to document data
-                jsonObject.put("score", hits[i].score);
-                // add stored fields for document to result, indexed by course ID
-                res.put(d.get("id"), jsonObject);
-                System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("content"));
+                // get stored fields from doc
+                Document d = searcher.doc(docId);
+                // get full Course data from cache for doc
+                int id = Integer.parseInt(d.get("id"));
+                Course course = cache.get(id);
+                // build result, indexed by course ID
+                res.put(d.get("id"), String.format("%d %s %f", course.getId(), course.getName(), hits[i].score));
             }
 
-        } catch (IOException | ParseException | JSONException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
         return res;
