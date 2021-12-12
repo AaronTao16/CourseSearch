@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
+import edu.pitt.coursesearch.model.Course;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -30,10 +31,16 @@ public class MyIndexReader {
     private Query query;
     private final AzureBlob azureBlob;
 
+    // corpus is small enough to fit fully in memory, use a HashMap to cache all course data
+    // cache is indexed by Course.id
+    // a database could be alternatively be used for larger collections
+    private final HashMap<Integer, Course> cache;
+
     // instantiate reader
-    public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
+    public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         this.azureBlob = azureBlob;
         this.analyzer = analyzer;
+        this.cache = cache;
         try {
             this.indexReader = DirectoryReader.open(ramDirectory);
         } catch (IOException e) {
@@ -74,9 +81,9 @@ public class MyIndexReader {
         return res;
     }
 
-    public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
+    public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         if (myIndexReader == null)
-            myIndexReader = new MyIndexReader(azureBlob, ramDirectory, analyzer);
+            myIndexReader = new MyIndexReader(azureBlob, ramDirectory, analyzer, cache);
 
     }
 

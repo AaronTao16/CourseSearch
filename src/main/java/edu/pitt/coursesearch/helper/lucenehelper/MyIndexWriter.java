@@ -2,7 +2,8 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
-import edu.pitt.coursesearch.model.MyDocument;
+import edu.pitt.coursesearch.model.Course;
+import edu.pitt.coursesearch.model.Section;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -52,9 +53,9 @@ public class MyIndexWriter {
     }
 
     // main index routine
-    public void createIndex () {
+    public HashMap<Integer, Course> createIndex () {
         // process corpus
-        getAllDocuments(azureBlob.getAllFileNames());
+        HashMap<Integer, Course> response = getAllDocuments(azureBlob.getAllFileNames());
 
         // add documents to indexer
         this.documentList.parallelStream().forEach(document -> {
@@ -64,8 +65,9 @@ public class MyIndexWriter {
                 e.printStackTrace();
             }
         });
-
         this.close();
+
+        return  response;
     }
 
     private Map<String, String> nextDocument(Iterator<String> iterator) {
@@ -82,66 +84,81 @@ public class MyIndexWriter {
     }
 
     // process corpus JSON into Lucene documents
-    private void getAllDocuments(List<String> allFileNames) {
+    private HashMap<Integer, Course> getAllDocuments(List<String> allFileNames) {
+        HashMap<Integer, Course> response = new HashMap<>();
+        // open file on azure
         allFileNames.stream().parallel().forEach(fileName -> {
             if(!fileName.equals("data.json")) return;
 
             try {
-                JSONObject jsonObject = new JSONObject(this.azureBlob.readFiles(fileName));
-
-                for (int i = 0; i < jsonObject.names().length(); i++) {
-                    List<String> content = new ArrayList<>();
-                    Document document = new Document();
-                    // parse JSON
-                    String id = (String) jsonObject.names().get(i);
-                    JSONObject course = (JSONObject) jsonObject.get(id);
-                    String name = course.get("name").toString().trim();
-                    String courseDep = ((JSONObject) course.get("courseCode")).get("dept").toString().trim();
-                    String courseNum = ((JSONObject) course.get("courseCode")).get("number").toString().trim();
-                    String courseInstructor = course.get("instructor").toString().trim();
-                    String grad = course.get("grad").toString().equals("false") ? "undergraduate" : "graduate";
-                    String des = course.get("description").toString().trim();
-                    content.add(name);
-                    content.add(courseDep);
-                    content.add(courseNum);
-                    content.add(des);
-                    content.add(courseInstructor);
-                    content.add(grad);
-                    // special handling for sections
-                    JSONArray section = course.getJSONArray("sections");
-                    for (int j = 0; j < section.length(); j++) {
-                        String classNumber = section.getJSONObject(j).get("classNumber").toString();
-                        String days = section.getJSONObject(j).get("days").toString();
-                        String beginTime = section.getJSONObject(j).get("beginTime").toString();
-                        String endTime = section.getJSONObject(j).get("endTime").toString();
-                        String sectionType = section.getJSONObject(j).get("sectionType").toString();
-                        String building = section.getJSONObject(j).get("building").toString();
-                        String room = section.getJSONObject(j).get("room").toString();
-                        content.add(classNumber);
-                        content.add(days);
-                        content.add(beginTime);
-                        content.add(endTime);
-                        content.add(sectionType);
-                        content.add(building);
-                        content.add(room);
+                // read file as string, parse json
+                JSONObject courses = new JSONObject(this.azureBlob.readFiles(fileName));
+                // iterate through courses
+                for (int i = 0; i < courses.names().length(); i++) {
+                    // create Course object
+                    String id = (String) courses.names().get(i);
+                    JSONObject course = (JSONObject) courses.get(id);
+                    Course newCourse = new Course(
+                            Integer.parseInt(id),
+                            ((JSONObject) course.get("courseCode")).get("dept").toString().trim(),
+                            Integer.parseInt(((JSONObject) course.get("courseCode")).get("number").toString().trim()),
+                            course.get("name").toString().trim(),
+                            course.get("description").toString().trim(),
+                            course.get("instructor").toString().trim(),
+                            course.get("grad").toString().equals("true") ? true : false,
+                            new ArrayList<>(),
+                            new ArrayList<>(),
+                            new ArrayList<>()
+                    );
+                    // special handling for graduation requirements
+                    JSONArray required = ((JSONObject) course.get("satisfiedReqs")).getJSONArray("required");
+                    JSONArray elective = ((JSONObject) course.get("satisfiedReqs")).getJSONArray("elective");
+                    for (int j = 0; j < required.length(); j++) {
+                        newCourse.getRequired().add((String) required.get(j));
                     }
+                    for (int j = 0; j < elective.length(); j++) {
+                        newCourse.getRequired().add((String) elective.get(j));
+                    }
+                    // special handling for sections
+                    JSONArray sections = course.getJSONArray("sections");
+                    for (int j = 0; j < sections.length(); j++) {
+                        // create and save each Section
+                        JSONObject section = sections.getJSONObject(j);
+                        Section newSection = new Section(
+                                Integer.parseInt(section.get("classNumber").toString()),
+                                new ArrayList<>(),
+                                section.get("beginTime").toString(),
+                                section.get("endTime").toString(),
+                                section.get("sectionType").toString(),
+                                section.get("building").toString(),
+                                section.get("room").toString()
+                        );
+                        // add each day
+                        JSONArray days = section.getJSONArray("days");
+                        for (int k = 0; k < days.length(); k++) {
+                            newSection.getDays().add((String) days.get(k));
+                        }
+                        newCourse.getSections().add(newSection);
+                    }
+
+                    // add Course to memory cache
+                    response.put(newCourse.getId(), newCourse);
+
                     // create Lucene documents, set indexing options
-                    document.add(new TextField("id", id, Field.Store.YES));
+                    // TODO
+/*                    document.add(new TextField("id", id, Field.Store.YES));
                     document.add(new TextField("title", courseDep + " " + courseNum, Field.Store.YES));
                     document.add(new TextField("name", name, Field.Store.YES));
                     document.add(new TextField("instructor", courseInstructor, Field.Store.YES));
                     document.add(new TextField("grad", grad, Field.Store.YES));
                     document.add(new TextField("content", content.toString().replaceAll(",", "").replaceAll("\\[", "").replaceAll("]", ""), Field.Store.YES));
                     document.add(new TextField("course", course.toString(), Field.Store.YES));
-
-                    this.documentList.add(document);
+                    this.documentList.add(document);*/
 
                 }
             } catch (URISyntaxException | StorageException | IOException | JSONException e) {
                 e.printStackTrace();
             }
-
-
 //            String content = null;
 //            try {
 //                content = this.azureBlob.readFiles(fileName);
@@ -162,6 +179,8 @@ public class MyIndexWriter {
 //            }
 
         });
+
+        return response;
     }
 
     private void close() {

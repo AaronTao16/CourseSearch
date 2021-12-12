@@ -1,6 +1,5 @@
 package edu.pitt.coursesearch.service;
 
-import edu.pitt.coursesearch.model.MyDocument;
 import edu.pitt.coursesearch.repository.CourseSearchRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

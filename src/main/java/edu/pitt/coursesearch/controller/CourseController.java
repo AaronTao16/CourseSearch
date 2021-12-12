@@ -1,6 +1,5 @@
 package edu.pitt.coursesearch.controller;
 
-import edu.pitt.coursesearch.model.MyDocument;
 import edu.pitt.coursesearch.service.CourseSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONObject;

@@ -5,6 +5,7 @@ import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import edu.pitt.coursesearch.helper.lucenehelper.MyIndexReader;
 import edu.pitt.coursesearch.helper.lucenehelper.MyIndexWriter;
 import edu.pitt.coursesearch.helper.lucenehelper.MyNormalize;
+import edu.pitt.coursesearch.model.Course;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -17,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.HashMap;
 
 @SpringBootApplication
 public class CourseSearchApplication {
@@ -45,9 +47,10 @@ public class CourseSearchApplication {
 
         AzureBlob azureBlobAfterNormalize = new AzureBlob(this.connectionKey, this.containerName);
         MyIndexWriter myIndexWriter = new MyIndexWriter(azureBlobAfterNormalize, ramDirectory, analyzer);
-        myIndexWriter.createIndex();
+        // create the index, return the corpus cache
+        HashMap<Integer, Course> courseCache = myIndexWriter.createIndex();
 
-        MyIndexReader.getInstance(azureBlobAfterNormalize, ramDirectory, analyzer);
+        MyIndexReader.getInstance(azureBlobAfterNormalize, ramDirectory, analyzer, courseCache);
     }
 
 }
