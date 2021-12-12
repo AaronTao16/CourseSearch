@@ -59,19 +59,23 @@ public class MyIndexWriter {
     }
 
     private Map<String, String> nextDocument(Iterator<String> iterator) {
-        Map<String, String> doc = null;
-        if (iterator.hasNext()){
-            doc = new HashMap<>();
-            String course = iterator.next();
-            String[] courseInfo = course.trim().split(" ");
-            doc.put("id", courseInfo[0]);
-            doc.put("content", Arrays.stream(courseInfo).skip(1).collect(Collectors.joining(" ")));
-        }
+        Map<String, String> doc = new HashMap<>();
+        int index = 0;
+        while (iterator.hasNext()){
+            if(index == 4) break;
+            String line = iterator.next();
+            if(index == 0){ doc.put("name", line); }
+            if(index == 1){ doc.put("title", line); }
+            if(index == 2){ doc.put("instructor", line); }
 
-//        if (iterator.hasNext()){
-//            String courseJson = iterator.next();
-//            doc.put("course", courseJson.replaceAll("\\|", ","));
-//        }
+            if(index == 3){
+                String[] courseInfo = line.trim().split(" ");
+                doc.put("id", courseInfo[0]);
+                doc.put("content", Arrays.stream(courseInfo).skip(1).collect(Collectors.joining(" ")));
+            }
+
+            index++;
+        }
 
         return doc;
     }
@@ -92,11 +96,13 @@ public class MyIndexWriter {
 
             Iterator<String> iterator = OriginalList.iterator();
 
-            while((doc = nextDocument(iterator)) != null){
+            while((doc = nextDocument(iterator)).size() != 0){
                 Document document = new Document();
                 document.add(new TextField("id", doc.get("id"), Field.Store.YES));
                 document.add(new TextField("content", doc.get("content"), Field.Store.YES));
-//                document.add(new TextField("course", doc.get("course"), Field.Store.YES));
+                document.add(new TextField("name", doc.get("name"), Field.Store.YES));
+                document.add(new TextField("title", doc.get("title"), Field.Store.YES));
+                document.add(new TextField("instructor", doc.get("instructor"), Field.Store.YES));
                 this.documentList.add(document);
             }
 

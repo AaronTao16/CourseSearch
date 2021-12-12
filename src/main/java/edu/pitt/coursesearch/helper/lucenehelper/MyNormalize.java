@@ -4,7 +4,6 @@ import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
@@ -61,6 +60,10 @@ public class MyNormalize {
                     content.add(courseInstructor);
                     content.add(grad);
 
+                    collections.add(courseName + "\n");
+                    collections.add(courseDep + courseNum + "\n");
+                    collections.add(courseInstructor + "\n");
+
                     JSONArray section = course.getJSONArray("sections");
                     for(int j = 0; j < section.length(); j++){
                         String classNumber = section.getJSONObject(j).get("classNumber").toString();
@@ -86,12 +89,11 @@ public class MyNormalize {
                         collections.add(tokenStream.getAttribute(CharTermAttribute.class).toString().trim());
                     }
                     collections.add("\n");
-//                    System.out.println((course.toString()));
                     original.add(id + " " + course.toString() + "\n");
                     tokenStream.close();
                 }
 
-                this.blobWriter.uploadFiles(String.format("after_normalize_%s", name), String.join("", collections));
+                this.blobWriter.uploadFiles(String.format("after_normalize_%s", name), String.join(" ", collections));
                 this.blobWriter.uploadFiles(String.format("after_normalize_%s", "original"), String.join("", original));
             } catch (Exception e) {
                 e.printStackTrace();

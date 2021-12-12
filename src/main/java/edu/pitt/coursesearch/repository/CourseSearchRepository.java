@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Repository;
 import java.util.Map;
 
