@@ -10,6 +10,7 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.RAMDirectory;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -40,6 +41,8 @@ public class MyIndexWriter {
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
         // create or overwrite index
         indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+        // set TF-IDF based VSM similarity
+        indexWriterConfig.setSimilarity(new ClassicSimilarity());
         // create IndexWriter instance (in-memory index)
         this.indexWriter = new IndexWriter(ramDirectory, indexWriterConfig);
         // configure default field options (does this work?)g

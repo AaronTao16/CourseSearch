@@ -19,6 +19,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.RAMDirectory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
@@ -54,6 +55,7 @@ public class MyIndexReader {
             throw new NullPointerException("unable to find indexReader");
         }
         this.searcher = new IndexSearcher(this.indexReader);
+        this.searcher.setSimilarity(new ClassicSimilarity());
     }
 
     // main search function
