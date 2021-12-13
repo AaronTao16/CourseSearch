@@ -150,7 +150,7 @@ public class MyIndexWriter {
                     Document document = new Document();
                     document.add(new StoredField("id", newCourse.getId())); // needed in index but not searched
                     document.add(new TextField("dept", newCourse.getDept(), Field.Store.NO));
-                    document.add(new IntPoint("number", newCourse.getNumber()));    // not stored
+                    document.add(new StringField("number", Integer.toString( newCourse.getNumber()), Field.Store.NO));  // do not tokenize
                     document.add(new TextField("name", newCourse.getName(), Field.Store.NO));
                     document.add(new TextField("description", newCourse.getDescription(), Field.Store.NO));
                     document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
