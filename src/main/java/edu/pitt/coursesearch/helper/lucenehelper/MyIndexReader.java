@@ -1,20 +1,25 @@
 package edu.pitt.coursesearch.helper.lucenehelper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
+import edu.pitt.coursesearch.model.Course;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.RAMDirectory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
@@ -30,9 +35,16 @@ public class MyIndexReader {
     private Query query;
     private final AzureBlob azureBlob;
 
-    public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
+    // corpus is small enough to fit fully in memory, use a HashMap to cache all course data
+    // cache is indexed by Course.id
+    // a database could be alternatively be used for larger collections
+    private final HashMap<Integer, Course> cache;
+
+    // instantiate reader
+    public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         this.azureBlob = azureBlob;
         this.analyzer = analyzer;
+        this.cache = cache;
         try {
             this.indexReader = DirectoryReader.open(ramDirectory);
         } catch (IOException e) {
@@ -43,11 +55,42 @@ public class MyIndexReader {
             throw new NullPointerException("unable to find indexReader");
         }
         this.searcher = new IndexSearcher(this.indexReader);
+        this.searcher.setSimilarity(new ClassicSimilarity());
     }
 
-    public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) {
+    // main search function
+    // searches a specific document field
+    public List<Course> searchDocument(String query, int topK) {
+        ArrayList<Course> res = new ArrayList<>();
+
+        try {
+            // parse query, search
+            String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
+            this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
+            TopDocs topDocs = this.searcher.search(this.query, topK);
+            ScoreDoc[] hits = topDocs.scoreDocs;
+
+            for(int i=0;i<hits.length;++i) {
+                int docId = hits[i].doc;    // lucene docID
+                // get stored fields from doc
+                Document d = searcher.doc(docId);
+                // get full Course data from cache for doc
+                int id = Integer.parseInt(d.get("id"));
+                Course course = cache.get(id);
+                // build result, indexed by course ID
+                course.setScore(hits[i].score);
+                res.add(course);
+            }
+
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         if (myIndexReader == null)
-            myIndexReader = new MyIndexReader(azureBlob, ramDirectory, analyzer);
+            myIndexReader = new MyIndexReader(azureBlob, ramDirectory, analyzer, cache);
 
     }
 
@@ -57,31 +100,6 @@ public class MyIndexReader {
         }
 
         return myIndexReader;
-    }
-
-    public Map<String, JSONObject> searchDocument(String query, String field, int topK) {
-        Map<String, JSONObject> res = new HashMap<>();
-
-        try {
-            this.query = new QueryParser(field, analyzer).parse(query);
-            TopDocs topDocs = this.searcher.search(this.query, topK);
-            ScoreDoc[] hits = topDocs.scoreDocs;
-
-            System.out.println(hits.length);
-            for(int i=0;i<hits.length;++i) {
-                int docId = hits[i].doc;
-                Document d = searcher.doc(docId);
-//                JSONObject jsonObject = new JSONObject(d.get("course"));
-//                jsonObject.put("score", hits[i].score);
-//                res.put(d.get("id"), jsonObject);
-//                res.put(d.get("id"), hits[i].score);
-                System.out.println((i + 1) + ". " + d.get("id") + "\t" + d.get("content"));
-            }
-
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-        return res;
     }
 
 
