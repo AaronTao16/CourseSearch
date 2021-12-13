@@ -86,36 +86,6 @@ public class MyIndexReader {
         return res;
     }
 
-    // main search function
-    // searches some specific document fields
-    public List<Course> searchDocument(String query, String[] field, int topK){
-        List<Course> res = new LinkedList<>();
-        if(query.equals("")) return res;
-
-        try {
-            // parse query, search
-            this.query = new MultiFieldQueryParser(field, analyzer).parse(query);
-            TopDocs topDocs = this.searcher.search(this.query, topK);
-            ScoreDoc[] hits = topDocs.scoreDocs;
-
-            for(int i=0;i<hits.length;++i) {
-                int docId = hits[i].doc;    // lucene docID
-                // get stored fields from doc
-                Document d = searcher.doc(docId);
-                // get full Course data from cache for doc
-                int id = Integer.parseInt(d.get("id"));
-                Course course = cache.get(id);
-                // build result, indexed by course ID
-                course.setScore(hits[i].score);
-                res.add(course);
-            }
-
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-        return res;
-    }
-
     public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         if (myIndexReader == null)
             myIndexReader = new MyIndexReader(azureBlob, ramDirectory, analyzer, cache);

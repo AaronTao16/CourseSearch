@@ -21,7 +21,7 @@ function handleClick(myRadio) {
     const query = urlParams.get('query')
     console.log(query)
     httpRequest.onreadystatechange = alertContents;
-    httpRequest.open('GET', '/search?level=' + query + " " + currentValue);
+    httpRequest.open('GET', '/search?query=' + query + " " + currentValue);
     httpRequest.send();
 }
 
