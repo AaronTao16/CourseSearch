@@ -20,22 +20,8 @@ public class CourseController {
 
     @GetMapping("/search")
     public String Query(@RequestParam("query") final String query, ModelMap modelMap){
-        StringBuilder result = new StringBuilder();
-//        for (Map.Entry<String, Course> map: courseSearchService.getSearchResult(query, "content").entrySet()){
-//            System.out.println(map.getValue());
-//            result.append(map.getValue()).append("\n");
-//        }
-        return "srp";
-    }
+        modelMap.put("courseList", courseSearchService.getSearchResult(query));
 
-    @GetMapping("/searchInstructor")
-    public String QueryInstructor(@RequestParam("instructor") final String query, ModelMap modelMap){
-//        for (Map.Entry<String, String> map: courseSearchService.getInstructorSearchRes(query, "instructor").entrySet()){
-//            result.append(map.getKey()).append(": ").append(map.getValue().toString()).append("\n");
-//        }
-
-//        return result.toString();
-        modelMap.put("courseList", courseSearchService.getInstructorSearchRes(query, "instructor"));
         return "srp";
     }
 

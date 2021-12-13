@@ -4,7 +4,6 @@ import com.microsoft.azure.storage.StorageException;
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import edu.pitt.coursesearch.helper.lucenehelper.MyIndexReader;
 import edu.pitt.coursesearch.helper.lucenehelper.MyIndexWriter;
-import edu.pitt.coursesearch.helper.lucenehelper.MyNormalize;
 import edu.pitt.coursesearch.model.Course;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;

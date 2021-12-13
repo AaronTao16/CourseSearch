@@ -16,7 +16,6 @@ public class CourseSearchService {
     @Autowired
     CourseSearchRepository courseSearchRepository;
 
-    public List<Course> getSearchResult(String query, String field) { return courseSearchRepository.getSearchResult(query, field); }
+    public List<Course> getSearchResult(String query) { return courseSearchRepository.getSearchResult(query); }
 
-    public List<Course> getInstructorSearchRes(String query, String field) {return courseSearchRepository.getInstructorSearchRes(query, field);}
 }

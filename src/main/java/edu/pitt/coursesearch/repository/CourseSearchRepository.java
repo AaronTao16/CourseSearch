@@ -20,11 +20,8 @@ public class CourseSearchRepository {
 
     private MyIndexReader myIndexReader = MyIndexReader.getInstance();
 
-    public List<Course> getSearchResult(String query, String field) {
-        return myIndexReader.searchDocument(query, field, 30);
+    public List<Course> getSearchResult(String query) {
+        return myIndexReader.searchDocument(query, 30);
     }
 
-    public List<Course> getInstructorSearchRes(String query, String field){
-        return myIndexReader.searchDocument(query, field, 30);
-    }
 }

@@ -114,7 +114,7 @@ public class MyIndexWriter {
                         newCourse.getRequired().add((String) required.get(j));
                     }
                     for (int j = 0; j < elective.length(); j++) {
-                        newCourse.getRequired().add((String) elective.get(j));
+                        newCourse.getElective().add((String) elective.get(j));
                     }
                     // special handling for sections
                     JSONArray sections = course.getJSONArray("sections");

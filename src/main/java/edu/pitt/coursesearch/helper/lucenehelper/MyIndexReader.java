@@ -1,7 +1,9 @@
 package edu.pitt.coursesearch.helper.lucenehelper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
@@ -10,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -55,12 +58,13 @@ public class MyIndexReader {
 
     // main search function
     // searches a specific document field
-    public Map<String, String> searchDocument(String query, String field, int topK) {
-        Map<String, String> res = new HashMap<>();
+    public List<Course> searchDocument(String query, int topK) {
+        ArrayList<Course> res = new ArrayList<>();
 
         try {
             // parse query, search
-            this.query = new QueryParser(field, analyzer).parse(query);
+            String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
+            this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
             TopDocs topDocs = this.searcher.search(this.query, topK);
             ScoreDoc[] hits = topDocs.scoreDocs;
 
@@ -72,7 +76,8 @@ public class MyIndexReader {
                 int id = Integer.parseInt(d.get("id"));
                 Course course = cache.get(id);
                 // build result, indexed by course ID
-                res.put(d.get("id"), String.format("%d %s %f", course.getId(), course.getName(), hits[i].score));
+                course.setScore(hits[i].score);
+                res.add(course);
             }
 
         } catch (IOException | ParseException e) {
