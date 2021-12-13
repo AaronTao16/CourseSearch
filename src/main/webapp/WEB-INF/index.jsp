@@ -15,7 +15,7 @@
     }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <script src="./js/index.js"></script>
+    <script src="../../resources/jses/js/index.js"></script>
     <title>University of Pittsburgh Class Search Engine</title>
   </head>
   <body>
@@ -24,9 +24,9 @@
       Let's find a class @</h1>
     <br>
 
-    <form style="text-align: center;" id="search" action="/course/searchInstructor" method="get">
-      <img src="./img/pitt.png" style="text-align: center;" alt="University of Pittsburgh Class Search" width="280px"><br><br>
-      <input id="input1" type="text" placeholder=" Enter your search here" name="instructor">
+    <form style="text-align: center;" id="search" action="/search" method="get">
+      <img src="https://coursedata.blob.core.windows.net/img/pitt.png" style="text-align: center;" alt="University of Pittsburgh Class Search" width="280px"><br><br>
+      <input id="input1" type="text" placeholder=" Enter your search here" name="query">
     </form>
     
     

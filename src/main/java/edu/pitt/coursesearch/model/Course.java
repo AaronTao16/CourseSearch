@@ -1,5 +1,6 @@
 package edu.pitt.coursesearch.model;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class Course {
 
@@ -14,6 +15,8 @@ public class Course {
     private ArrayList<String> elective;
     private ArrayList<Section> sections;
     private float score;
+    private Set<String> days;
+
 
     public Course(int id, String dept, int number, String name, String description, String instructor, boolean grad, ArrayList<String> required, ArrayList<String> elective, ArrayList<Section> sections) {
         this.id = id;
@@ -75,5 +78,13 @@ public class Course {
 
     public void setScore(float score) {
         this.score = score;
+    }
+
+    public Set<String> getDays() {
+        return days;
+    }
+
+    public void setDays(Set<String> days) {
+        this.days = days;
     }
 }

@@ -135,8 +135,10 @@ public class MyIndexWriter {
                         );
                         // add each day
                         JSONArray days = section.getJSONArray("days");
+                        newCourse.setDays(new HashSet<>());
                         for (int k = 0; k < days.length(); k++) {
                             newSection.getDays().add((String) days.get(k));
+                            newCourse.getDays().add((String) days.get(k));
                         }
                         newCourse.getSections().add(newSection);
                     }

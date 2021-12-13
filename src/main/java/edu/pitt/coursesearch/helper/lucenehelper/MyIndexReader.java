@@ -1,10 +1,7 @@
 package edu.pitt.coursesearch.helper.lucenehelper;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import edu.pitt.coursesearch.model.Course;
@@ -59,14 +56,45 @@ public class MyIndexReader {
     }
 
     // main search function
-    // searches a specific document field
+    // searches all document fields
     public List<Course> searchDocument(String query, int topK) {
-        ArrayList<Course> res = new ArrayList<>();
+        List<Course> res = new LinkedList<>();
+        if(query.equals("")) return res;
 
         try {
             // parse query, search
             String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
             this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
+            TopDocs topDocs = this.searcher.search(this.query, topK);
+            ScoreDoc[] hits = topDocs.scoreDocs;
+
+            for(int i=0;i<hits.length;++i) {
+                int docId = hits[i].doc;    // lucene docID
+                // get stored fields from doc
+                Document d = searcher.doc(docId);
+                // get full Course data from cache for doc
+                int id = Integer.parseInt(d.get("id"));
+                Course course = cache.get(id);
+                // build result, indexed by course ID
+                course.setScore(hits[i].score);
+                res.add(course);
+            }
+
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    // main search function
+    // searches some specific document fields
+    public List<Course> searchDocument(String query, String[] field, int topK){
+        List<Course> res = new LinkedList<>();
+        if(query.equals("")) return res;
+
+        try {
+            // parse query, search
+            this.query = new MultiFieldQueryParser(field, analyzer).parse(query);
             TopDocs topDocs = this.searcher.search(this.query, topK);
             ScoreDoc[] hits = topDocs.scoreDocs;
 
