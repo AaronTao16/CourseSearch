@@ -1,12 +1,15 @@
 package edu.pitt.coursesearch.repository;
 
 import edu.pitt.coursesearch.helper.lucenehelper.MyIndexReader;
+import edu.pitt.coursesearch.model.Course;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -17,11 +20,11 @@ public class CourseSearchRepository {
 
     private MyIndexReader myIndexReader = MyIndexReader.getInstance();
 
-    public Map<String, String> getSearchResult(String query, String field) {
+    public List<Course> getSearchResult(String query, String field) {
         return myIndexReader.searchDocument(query, field, 30);
     }
 
-/*    public Map<String, JSONObject> getInstructorSearchRes(String query, String field){
+    public List<Course> getInstructorSearchRes(String query, String field){
         return myIndexReader.searchDocument(query, field, 30);
-    }*/
+    }
 }
