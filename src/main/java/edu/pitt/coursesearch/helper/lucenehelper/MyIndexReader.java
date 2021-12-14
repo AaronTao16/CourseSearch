@@ -5,9 +5,17 @@ import java.util.*;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import edu.pitt.coursesearch.model.Course;
+import edu.pitt.coursesearch.model.SearchResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.facet.FacetResult;
+import org.apache.lucene.facet.Facets;
+import org.apache.lucene.facet.FacetsCollector;
+import org.apache.lucene.facet.FacetsConfig;
+import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
+import org.apache.lucene.facet.taxonomy.TaxonomyReader;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -27,6 +35,7 @@ public class MyIndexReader {
     private DirectoryReader ireader;
 
     private IndexReader indexReader;
+    private TaxonomyReader facetReader;
     private final IndexSearcher searcher;
     private final Analyzer analyzer;
     private Query query;
@@ -38,12 +47,14 @@ public class MyIndexReader {
     private final HashMap<Integer, Course> cache;
 
     // instantiate reader
-    public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
+    public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, RAMDirectory facetDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         this.azureBlob = azureBlob;
         this.analyzer = analyzer;
         this.cache = cache;
         try {
             this.indexReader = DirectoryReader.open(ramDirectory);
+            // facet index reader
+            this.facetReader = new DirectoryTaxonomyReader(facetDirectory);
         } catch (IOException e) {
 //            log.error("unable to create index reader because of" + e.getMessage());
         }
@@ -56,18 +67,22 @@ public class MyIndexReader {
     }
 
     // main search function
-    // searches all document fields
-    public List<Course> searchDocument(String query, int topK) {
-        List<Course> res = new LinkedList<>();
+    // searches all indexed document fields
+    public SearchResult searchDocument(String query, int topK) {
+        List<Course> courses = new LinkedList<>();
+        FacetsCollector fc = new FacetsCollector();
+        List<FacetResult> facetResults = new LinkedList<>();
+
         if(query.equals("")) return res;
 
         try {
             // parse query, search
             String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
             this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
-            TopDocs topDocs = this.searcher.search(this.query, topK);
+            TopDocs topDocs = FacetsCollector.search(this.searcher, this.query, topK, fc);
             ScoreDoc[] hits = topDocs.scoreDocs;
 
+            // get Course objects for search results
             for(int i=0;i<hits.length;++i) {
                 int docId = hits[i].doc;    // lucene docID
                 // get stored fields from doc
@@ -77,18 +92,24 @@ public class MyIndexReader {
                 Course course = cache.get(id);
                 // build result, indexed by course ID
                 course.setScore(hits[i].score);
-                res.add(course);
+                courses.add(course);
             }
+
+            // collect related facets
+            Facets facets = new FastTaxonomyFacetCounts(this.facetReader, new FacetsConfig(), fc);
+            facetResults = facets.getAllDims(50);
 
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
+
+        SearchResult res = new SearchResult(courses, facetResults);
         return res;
     }
 
-    public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
+    public static void getInstance(AzureBlob azureBlob, RAMDirectory ramDirectory, RAMDirectory faceDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
         if (myIndexReader == null)
-            myIndexReader = new MyIndexReader(azureBlob, ramDirectory, analyzer, cache);
+            myIndexReader = new MyIndexReader(azureBlob, ramDirectory, faceDirectory, analyzer, cache);
 
     }
 

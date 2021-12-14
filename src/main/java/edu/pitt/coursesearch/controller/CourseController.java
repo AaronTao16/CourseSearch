@@ -21,7 +21,8 @@ public class CourseController {
 
     @GetMapping("/search")
     public String Query(@RequestParam("query") final String query, ModelMap modelMap){
-        modelMap.put("courseList", courseSearchService.getSearchResult(query));
+        modelMap.put("courseList", courseSearchService.getSearchResult(query).getCourseList());
+        // TODO put facet list
         return "srp";
     }
 

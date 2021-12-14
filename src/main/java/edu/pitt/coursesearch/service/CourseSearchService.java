@@ -1,6 +1,7 @@
 package edu.pitt.coursesearch.service;
 
 import edu.pitt.coursesearch.model.Course;
+import edu.pitt.coursesearch.model.SearchResult;
 import edu.pitt.coursesearch.repository.CourseSearchRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ public class CourseSearchService {
     @Autowired
     CourseSearchRepository courseSearchRepository;
 
-    public List<Course> getSearchResult(String query) {
+    public SearchResult getSearchResult(String query) {
         return courseSearchRepository.getSearchResult(query);
     }
 

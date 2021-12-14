@@ -50,7 +50,7 @@ public class CourseSearchApplication {
         // create the index, return the corpus cache
         HashMap<Integer, Course> courseCache = myIndexWriter.createIndex();
 
-        MyIndexReader.getInstance(azureBlobAfterNormalize, ramDirectory, analyzer, courseCache);
+        MyIndexReader.getInstance(azureBlobAfterNormalize, ramDirectory, facetDirectory, analyzer, courseCache);
     }
 
 }

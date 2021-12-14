@@ -2,6 +2,7 @@ package edu.pitt.coursesearch.repository;
 
 import edu.pitt.coursesearch.helper.lucenehelper.MyIndexReader;
 import edu.pitt.coursesearch.model.Course;
+import edu.pitt.coursesearch.model.SearchResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
@@ -16,7 +17,7 @@ public class CourseSearchRepository {
 
     private MyIndexReader myIndexReader = MyIndexReader.getInstance();
 
-    public List<Course> getSearchResult(String query) {
+    public SearchResult getSearchResult(String query) {
         return myIndexReader.searchDocument(query, 20);
     }
 
