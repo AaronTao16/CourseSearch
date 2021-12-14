@@ -29,7 +29,6 @@ public class MyIndexWriter {
     private IndexWriter indexWriter;
     private final AzureBlob azureBlob;
     public final RAMDirectory ramDirectory;
-    private FieldType type;
 
 
     public MyIndexWriter(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) throws IOException {
@@ -45,11 +44,6 @@ public class MyIndexWriter {
         indexWriterConfig.setSimilarity(new ClassicSimilarity());
         // create IndexWriter instance (in-memory index)
         this.indexWriter = new IndexWriter(ramDirectory, indexWriterConfig);
-        // configure default field options (does this work?)g
-        type = new FieldType();
-        type.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
-        type.setStored(false);
-        type.setStoreTermVectors(true);
     }
 
     // main index routine
