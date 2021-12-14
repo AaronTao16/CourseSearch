@@ -19,4 +19,8 @@ public class CourseSearchService {
         return courseSearchRepository.getSearchResult(query);
     }
 
+    public List<Course> getSearchResult(String query, String page) {
+        return courseSearchRepository.getSearchResult(query, page);
+    }
+
 }

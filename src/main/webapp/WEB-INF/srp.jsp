@@ -43,8 +43,8 @@
 
 <body>
     <div class="container">
-        <form style="text-align: center;" id="search" action="/search" method="get">
-            <input class="heading" type="" placeholder=" Enter your search here" name="query">
+        <form style="text-align: center;" id="search" action="/search?page=1&" method="get">
+            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here" name="query" value="" >
         </form>
         <div class="row">
             <div class="col-md-3 c-mt-20">
@@ -124,10 +124,18 @@
                             </div>
                             <div class="col-md-8">
                                 <h5 class="family">${course.name}</h5>
-                                <p>
-                                    ${course.description}...
-                                    <%--.substring(0, course.description.length()/2)--%>
-                                </p>
+<%--                                <c:if test="${course.highlightFrag != ''}">--%>
+<%--                                <p>--%>
+<%--                                    ${course.highlightFrag}...--%>
+<%--                                    &lt;%&ndash;.substring(0, course.description.length()/2)&ndash;%&gt;--%>
+<%--                                </p>--%>
+<%--                                </c:if>--%>
+
+<%--                                <c:if test="${course.highlightFrag == ''}">--%>
+                                    <p>
+                                            ${course.description}
+                                    </p>
+<%--                                </c:if>--%>
                             </div>
 
                             <div class="row">
@@ -149,8 +157,30 @@
                 </c:if>
             </div>
         </div>
+        <br>
 
-        
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <a class="page-link" href="" onclick="prePage(this)">Previous</a>
+                </li>
+                <li class="page-item"><a id = "l1" class="page-link" href="" onclick="goToPage(this)">1</a></li>
+                <li class="page-item"><a id = "l2" class="page-link" href="" onclick="goToPage(this)">2</a></li>
+                <li class="page-item"><a id = "l3" class="page-link" href="" onclick="goToPage(this)">3</a></li>
+                <jsp:useBean id="hasNext" scope="request" type="java.lang.Boolean"/>
+                <c:if test="${hasNext}">
+                <li class="page-item">
+                        <a id="next" class="page-link" href="" onclick="nextPage(this)">Next</a>
+                </li>
+                </c:if>
+
+                <c:if test="${!hasNext}">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="" onclick="nextPage(this)">Next</a>
+                    </li>
+                </c:if>
+            </ul>
+        </nav>
     </div>
 </body>
 

@@ -154,7 +154,7 @@ public class MyIndexWriter {
                     document.add(new TextField("dept", newCourse.getDept(), Field.Store.NO));
                     document.add(new StringField("number", Integer.toString( newCourse.getNumber()), Field.Store.NO));  // do not tokenize
                     document.add(new TextField("name", newCourse.getName(), Field.Store.NO));
-                    document.add(new TextField("description", newCourse.getDescription(), Field.Store.NO));
+                    document.add(new TextField("description", newCourse.getDescription(), Field.Store.YES));
                     document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
 
                     this.documentList.add(document);

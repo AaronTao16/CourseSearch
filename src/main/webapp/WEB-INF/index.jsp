@@ -24,7 +24,7 @@
       Let's find a class @</h1>
     <br>
 
-    <form style="text-align: center;" id="search" action="/search" method="get">
+    <form style="text-align: center;" id="search" action="/search?page=1&" method="get">
       <img src="https://coursedata.blob.core.windows.net/img/pitt.png" style="text-align: center;" alt="University of Pittsburgh Class Search" width="280px"><br><br>
       <input id="input1" type="text" placeholder=" Enter your search here" name="query">
     </form>

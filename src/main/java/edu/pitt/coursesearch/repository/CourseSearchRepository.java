@@ -17,7 +17,11 @@ public class CourseSearchRepository {
     private MyIndexReader myIndexReader = MyIndexReader.getInstance();
 
     public List<Course> getSearchResult(String query) {
-        return myIndexReader.searchDocument(query, 20);
+        return myIndexReader.searchDocument(query, 30, 1);
+    }
+
+    public List<Course> getSearchResult(String query, String page) {
+        return myIndexReader.searchDocument(query, 30, Integer.parseInt(page));
     }
 
 }

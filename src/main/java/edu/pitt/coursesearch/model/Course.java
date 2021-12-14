@@ -1,14 +1,22 @@
 package edu.pitt.coursesearch.model;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Set;
 
-public class Course {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Course implements Cloneable{
 
     private int id;
     private String dept;
     private int number;
     private String name;
     private String description;
+    private String highlightFrag;
     private String instructor;
     private boolean grad;
     private ArrayList<String> required;
@@ -31,60 +39,8 @@ public class Course {
         this.sections = sections;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getDept() {
-        return dept;
-    }
-
-    public int getNumber() {
-        return number;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getInstructor() {
-        return instructor;
-    }
-
-    public boolean isGrad() {
-        return grad;
-    }
-
-    public ArrayList<String> getRequired() {
-        return required;
-    }
-
-    public ArrayList<String> getElective() {
-        return elective;
-    }
-
-    public ArrayList<Section> getSections() {
-        return sections;
-    }
-
-
-    public float getScore() {
-        return score;
-    }
-
-    public void setScore(float score) {
-        this.score = score;
-    }
-
-    public Set<String> getDays() {
-        return days;
-    }
-
-    public void setDays(Set<String> days) {
-        this.days = days;
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();    // return shallow copy
     }
 }

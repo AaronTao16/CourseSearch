@@ -2,11 +2,13 @@ package edu.pitt.coursesearch.helper.lucenehelper;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Formatter;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import edu.pitt.coursesearch.model.Course;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -16,6 +18,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.*;
 import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.store.RAMDirectory;
 import org.springframework.boot.configurationprocessor.json.JSONException;
@@ -36,6 +39,7 @@ public class MyIndexReader {
     // cache is indexed by Course.id
     // a database could be alternatively be used for larger collections
     private final HashMap<Integer, Course> cache;
+    private int skipPage = 0;
 
     // instantiate reader
     public MyIndexReader(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer, HashMap<Integer, Course> cache) {
@@ -57,7 +61,7 @@ public class MyIndexReader {
 
     // main search function
     // searches all document fields
-    public List<Course> searchDocument(String query, int topK) {
+    public List<Course> searchDocument(String query, int topK, int page) {
         List<Course> res = new LinkedList<>();
         if(query.equals("")) return res;
 
@@ -65,22 +69,48 @@ public class MyIndexReader {
             // parse query, search
             String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
             this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
-            TopDocs topDocs = this.searcher.search(this.query, topK);
+            TopDocs topDocs = this.searcher.search(this.query, Math.min(page*10+1, topK));
             ScoreDoc[] hits = topDocs.scoreDocs;
 
-            for(int i=0;i<hits.length;++i) {
+            /** Highlighter Code Start ****/
+
+//            //Uses HTML &lt;B&gt;&lt;/B&gt; tag to highlight the searched terms
+//            SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter("<mark>", "</mark>");
+//
+//            //It scores text fragments by the number of unique query terms found
+//            //Basically the matching score in layman terms
+//            QueryScorer scorer = new QueryScorer(this.query);
+//
+//            //used to markup highlighted terms found in the best sections of a text
+//            Highlighter highlighter = new Highlighter(htmlFormatter, scorer);
+//
+//            //It breaks text up into same-size texts but does not split up spans
+//            Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 10);
+//
+//            //set fragmenter to highlighter
+//            highlighter.setTextFragmenter(fragmenter);
+
+            for(int i=(page-1)*10;i<hits.length;++i) {
                 int docId = hits[i].doc;    // lucene docID
                 // get stored fields from doc
                 Document d = searcher.doc(docId);
                 // get full Course data from cache for doc
                 int id = Integer.parseInt(d.get("id"));
-                Course course = cache.get(id);
+                Course course = (Course) cache.get(id).clone();
                 // build result, indexed by course ID
                 course.setScore(hits[i].score);
+
+//                //Create token stream
+//                TokenStream stream = TokenSources.getAnyTokenStream(indexReader, docId, "description", analyzer);
+//
+//                //Get highlighted text fragments
+//                String[] frag = highlighter.getBestFragments(stream, course.getDescription(), 5);
+//                course.setHighlightFrag(String.join("...", frag));
+
                 res.add(course);
             }
 
-        } catch (IOException | ParseException e) {
+        } catch (IOException | ParseException | CloneNotSupportedException e) {
             e.printStackTrace();
         }
         return res;
