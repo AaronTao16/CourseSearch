@@ -62,6 +62,16 @@ function goToPage(cur){
 }
 
 window.onload = function () {
+
+    document.getElementById("searchInput").addEventListener("keyup", function(event) {
+        console.log(event.key)
+        if (event.key === "Enter") {
+            event.preventDefault();
+            var query = document.getElementById("searchInput").value
+            window.location.replace("/search?page=1&query=" + query);
+        }
+    });
+
     var queryInput = document.getElementById("searchInput")
     queryInput.setAttribute("value", new URLSearchParams(window.location.search).get('query'))
 

@@ -43,9 +43,9 @@
 
 <body>
     <div class="container">
-        <form style="text-align: center;" id="search" action="/search?page=1&" method="get">
-            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here" name="query" value="" >
-        </form>
+        <div style="text-align: center;">
+            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here" >
+        </div>
         <div class="row">
             <div class="col-md-3 c-mt-20">
                 <br>
