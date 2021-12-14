@@ -9,10 +9,7 @@ import edu.pitt.coursesearch.model.SearchResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.facet.FacetResult;
-import org.apache.lucene.facet.Facets;
-import org.apache.lucene.facet.FacetsCollector;
-import org.apache.lucene.facet.FacetsConfig;
+import org.apache.lucene.facet.*;
 import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
 import org.apache.lucene.facet.taxonomy.TaxonomyReader;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
@@ -73,13 +70,64 @@ public class MyIndexReader {
         FacetsCollector fc = new FacetsCollector();
         List<FacetResult> facetResults = new LinkedList<>();
 
-        if(query.equals("")) return res;
+        if(query.equals("")) return new SearchResult(new LinkedList<>(), new LinkedList<>());
 
         try {
             // parse query, search
             String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
             this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
             TopDocs topDocs = FacetsCollector.search(this.searcher, this.query, topK, fc);
+            ScoreDoc[] hits = topDocs.scoreDocs;
+
+            // get Course objects for search results
+            for(int i=0;i<hits.length;++i) {
+                int docId = hits[i].doc;    // lucene docID
+                // get stored fields from doc
+                Document d = searcher.doc(docId);
+                // get full Course data from cache for doc
+                int id = Integer.parseInt(d.get("id"));
+                Course course = cache.get(id);
+                // build result, indexed by course ID
+                course.setScore(hits[i].score);
+                courses.add(course);
+            }
+
+            // collect related facets
+            Facets facets = new FastTaxonomyFacetCounts(this.facetReader, new FacetsConfig(), fc);
+            facetResults = facets.getAllDims(50);
+
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+
+        SearchResult res = new SearchResult(courses, facetResults);
+        return res;
+    }
+
+    // perform a follow-up drill down search with the given dimensions and values
+    // dimensions are passed from the front-end as an array [label, value, label, value...]
+    public SearchResult drillDownSearch(String query, int topK, String[] dimensions) {
+        List<Course> courses = new LinkedList<>();
+        FacetsCollector fc = new FacetsCollector();
+        List<FacetResult> facetResults = new LinkedList<>();
+
+        if(query.equals("")) return new SearchResult(new LinkedList<>(), new LinkedList<>());
+
+        try {
+            // parse query
+            String[] fieldsToSearch = new String[] { "dept", "number", "name", "description", "instructor"};
+            this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
+
+            // create DrillDownQuery from base query
+            DrillDownQuery drillDownQuery = new DrillDownQuery(new FacetsConfig(), this.query);
+
+            // add dimensions to drill down
+            for(int i = 0; i <= dimensions.length - 2; i+=2) {
+                drillDownQuery.add(dimensions[i], dimensions[i+1]);
+            }
+
+            // search
+            TopDocs topDocs = FacetsCollector.search(this.searcher, drillDownQuery, topK, fc);
             ScoreDoc[] hits = topDocs.scoreDocs;
 
             // get Course objects for search results

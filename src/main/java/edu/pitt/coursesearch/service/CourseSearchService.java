@@ -20,4 +20,8 @@ public class CourseSearchService {
         return courseSearchRepository.getSearchResult(query);
     }
 
+    public SearchResult getDrillDownResults(String query, String[] facets) {
+        return courseSearchRepository.getDrillDownResults(query, facets);
+    }
+
 }

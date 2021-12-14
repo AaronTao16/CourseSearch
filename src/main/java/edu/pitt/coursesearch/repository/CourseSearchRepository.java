@@ -21,4 +21,8 @@ public class CourseSearchRepository {
         return myIndexReader.searchDocument(query, 20);
     }
 
+    public SearchResult getDrillDownResults(String query, String[] facets) {
+        return myIndexReader.drillDownSearch(query,20, facets);
+    }
+
 }
