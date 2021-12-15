@@ -5,6 +5,7 @@ import java.util.*;
 
 import edu.pitt.coursesearch.helper.azurehelper.AzureBlob;
 import edu.pitt.coursesearch.model.Course;
+import edu.pitt.coursesearch.model.Facet;
 import edu.pitt.coursesearch.model.SearchResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
@@ -68,7 +69,7 @@ public class MyIndexReader {
     public SearchResult searchDocument(String query, int topK) {
         List<Course> courses = new LinkedList<>();
         FacetsCollector fc = new FacetsCollector();
-        List<FacetResult> facetResults = new LinkedList<>();
+        List<Facet> facetBeans = new ArrayList<>();
 
         if(query.equals("")) return new SearchResult(new LinkedList<>(), new LinkedList<>());
 
@@ -94,13 +95,14 @@ public class MyIndexReader {
 
             // collect related facets
             Facets facets = new FastTaxonomyFacetCounts(this.facetReader, new FacetsConfig(), fc);
-            facetResults = facets.getAllDims(50);
+            List<FacetResult> facetResults = facets.getAllDims(50);
+            facetBeans = getFacets(facetResults);
 
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
-        SearchResult res = new SearchResult(courses, facetResults);
+        SearchResult res = new SearchResult(courses, facetBeans);
         return res;
     }
 
@@ -109,7 +111,7 @@ public class MyIndexReader {
     public SearchResult drillDownSearch(String query, int topK, String[] dimensions) {
         List<Course> courses = new LinkedList<>();
         FacetsCollector fc = new FacetsCollector();
-        List<FacetResult> facetResults = new LinkedList<>();
+        List<Facet> facetBeans = new ArrayList<>();
 
         if(query.equals("")) return new SearchResult(new LinkedList<>(), new LinkedList<>());
 
@@ -145,13 +147,28 @@ public class MyIndexReader {
 
             // collect related facets
             Facets facets = new FastTaxonomyFacetCounts(this.facetReader, new FacetsConfig(), fc);
-            facetResults = facets.getAllDims(50);
+            List<FacetResult> facetResults = facets.getAllDims(50);
+            facetBeans = getFacets(facetResults);
 
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
 
-        SearchResult res = new SearchResult(courses, facetResults);
+        SearchResult res = new SearchResult(courses, facetBeans);
+        return res;
+    }
+
+    // transform FacetResults into beans for results page
+    private List<Facet> getFacets(List<FacetResult> results) {
+        ArrayList<Facet> res = new ArrayList<>();
+        for (FacetResult result: results) {
+            Facet facet = new Facet(result.dim, new HashMap<String, Integer>());
+            for (LabelAndValue lv: result.labelValues) {
+                facet.getLabelValues().put(lv.label, lv.value.intValue());
+            }
+            res.add(facet);
+        }
+
         return res;
     }
 
