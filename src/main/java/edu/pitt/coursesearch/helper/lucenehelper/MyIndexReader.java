@@ -65,6 +65,8 @@ public class MyIndexReader {
         this.searcher.setSimilarity(new ClassicSimilarity());
         this.facetConfig = new FacetsConfig();
         this.facetConfig.setMultiValued("day", true);
+        this.facetConfig.setMultiValued("required", true);
+        this.facetConfig.setMultiValued("elective", true);
     }
 
     // main search function

@@ -56,10 +56,12 @@
                 <br>
                 <c:if test="${facetList.size() > 0}">
                     <c:forEach items="${facetList}" var="facet">
-                        <strong>${facet.category}</strong>
-                        <c:forEach items="${facet.labelValues}" var="labelValue">
-                            <span>${labelValue.key} - ${labelValue.value}</span>
-                        </c:forEach>
+                        <c:if test="${facet.labelValues.size() > 1}">
+                            <strong>${facet.category}</strong><br>
+                            <c:forEach items="${facet.labelValues}" var="labelValue">
+                                <span>${labelValue.key} - ${labelValue.value}</span><br>
+                            </c:forEach>
+                        </c:if>
                     </c:forEach>
                 </c:if>
             </div>

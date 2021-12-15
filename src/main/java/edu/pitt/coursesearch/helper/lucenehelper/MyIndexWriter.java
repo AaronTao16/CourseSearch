@@ -53,6 +53,8 @@ public class MyIndexWriter {
         this.facetWriter = new DirectoryTaxonomyWriter(facetDirectory);
         this.facetConfig = new FacetsConfig();
         this.facetConfig.setMultiValued("day", true);
+        this.facetConfig.setMultiValued("required", true);
+        this.facetConfig.setMultiValued("elective", true);
     }
 
     // main index routine
@@ -166,6 +168,14 @@ public class MyIndexWriter {
                         if (day.length() != 0) {
                             document.add(new FacetField("day",day));
                         }
+                    }
+                    // required
+                    for (String program : newCourse.getRequired()) {
+                        document.add(new FacetField("required",program));
+                    }
+                    // elective
+                    for (String program : newCourse.getElective()) {
+                        document.add(new FacetField("elective",program));
                     }
 
                     this.documentList.add(facetConfig.build(facetWriter, document));
