@@ -49,7 +49,7 @@
 
     <div class="container">
         <form style="text-align: center;" id="search" action="/search" method="get">
-            <input class="heading" type="" placeholder=" Enter your search here" name="query">
+            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here" name="query">
         </form>
         <div class="row">
             <div class="col-md-3 c-mt-20">
@@ -87,7 +87,7 @@
             </div>
 
             <div class="col-md-8">
-<%--                <jsp:useBean id="courseList" scope="request" type="java.util.List"/>--%>
+                <%--                <jsp:useBean id="courseList" scope="request" type="java.util.List"/>--%>
                 <c:if test="${courseList.size() == 0}">
                     <div class="row">
                         <h3 class="c-mt-30">Oops! No relevant courses!</h3>
@@ -111,8 +111,7 @@
                             <div class="col-md-8">
                                 <h5 class="family">${course.name}</h5>
                                 <p>
-                                    ${course.description}...
-                                    <%--.substring(0, course.description.length()/2)--%>
+                                        ${course.description}
                                 </p>
                             </div>
 
@@ -120,9 +119,6 @@
                                 <div class="col-md-3">
                                     <strong><em>Terms:Fall,Spring</em></strong>
                                 </div>
-    <%--                            <div class="col-md-3">--%>
-    <%--                                <strong><em>Requirements:2</em></strong>--%>
-    <%--                            </div>--%>
                                 <div class="col-md-3">
                                     <strong><em>Credits:3</em></strong>
                                 </div>

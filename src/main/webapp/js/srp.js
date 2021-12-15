@@ -14,3 +14,8 @@ function onFacetClick(e) {
     let redirectURL = `${currentURL}&facet=${encodeURIComponent(category)}&facet=${encodeURIComponent(label)}`;
     window.location.href = redirectURL;
 }
+
+window.onload = function () {
+    var queryInput = document.getElementById("searchInput")
+    queryInput.setAttribute("value", new URLSearchParams(window.location.search).get('query'))
+}
