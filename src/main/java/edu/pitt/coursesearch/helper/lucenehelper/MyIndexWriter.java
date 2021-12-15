@@ -101,7 +101,7 @@ public class MyIndexWriter {
                     Course newCourse = new Course(
                             Integer.parseInt(id),
                             ((JSONObject) course.get("courseCode")).get("dept").toString().trim(),
-                            Integer.parseInt(((JSONObject) course.get("courseCode")).get("number").toString().trim()),
+                            ((JSONObject) course.get("courseCode")).get("number").toString().trim(),
                             course.get("name").toString().trim(),
                             course.get("description").toString().trim(),
                             course.get("instructor").toString().trim(),
@@ -151,11 +151,11 @@ public class MyIndexWriter {
                     // id stored in index can be used to retrieve full Course data from cache
                     Document document = new Document();
                     document.add(new StoredField("id", newCourse.getId())); // needed in index but not searched
-                    document.add(new TextField("dept", newCourse.getDept(), Field.Store.NO));
-                    document.add(new StringField("number", Integer.toString( newCourse.getNumber()), Field.Store.NO));  // do not tokenize
-                    document.add(new TextField("name", newCourse.getName(), Field.Store.NO));
+                    document.add(new TextField("dept", newCourse.getDept(), Field.Store.YES));
+                    document.add(new StringField("number", newCourse.getNumber(), Field.Store.YES));  // do not tokenize
+                    document.add(new TextField("name", newCourse.getName(), Field.Store.YES));
                     document.add(new TextField("description", newCourse.getDescription(), Field.Store.YES));
-                    document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
+                    document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.YES));
 
                     this.documentList.add(document);
 
@@ -163,24 +163,6 @@ public class MyIndexWriter {
             } catch (URISyntaxException | StorageException | IOException | JSONException e) {
                 e.printStackTrace();
             }
-//            String content = null;
-//            try {
-//                content = this.azureBlob.readFiles(fileName);
-//                OriginalList = Arrays.asList(content.split("\n"));
-//            } catch (URISyntaxException | StorageException | IOException e) {
-//                e.printStackTrace();
-//            }
-//            // initiate a doc object, which can hold document number and document content of a document
-//            Map<String, String> doc = null;
-//
-//            Iterator<String> iterator = OriginalList.iterator();
-//
-//            while((doc = nextDocument(iterator)) != null){
-//                Document document = new Document();
-//                document.add(new TextField("id", doc.get("id"), Field.Store.YES));
-//                document.add(new TextField("content", doc.get("content"), Field.Store.YES));
-//                this.documentList.add(document);
-//            }
 
         });
 

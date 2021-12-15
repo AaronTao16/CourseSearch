@@ -13,7 +13,8 @@ public class Course implements Cloneable{
 
     private int id;
     private String dept;
-    private int number;
+    private String number;
+    private String highlightNumber;
     private String name;
     private String description;
     private String highlightFrag;
@@ -26,7 +27,7 @@ public class Course implements Cloneable{
     private Set<String> days;
 
 
-    public Course(int id, String dept, int number, String name, String description, String instructor, boolean grad, ArrayList<String> required, ArrayList<String> elective, ArrayList<Section> sections) {
+    public Course(int id, String dept, String number, String name, String description, String instructor, boolean grad, ArrayList<String> required, ArrayList<String> elective, ArrayList<Section> sections) {
         this.id = id;
         this.dept = dept;
         this.number = number;

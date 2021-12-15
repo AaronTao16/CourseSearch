@@ -74,21 +74,21 @@ public class MyIndexReader {
 
             /** Highlighter Code Start ****/
 
-//            //Uses HTML &lt;B&gt;&lt;/B&gt; tag to highlight the searched terms
-//            SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter("<mark>", "</mark>");
-//
-//            //It scores text fragments by the number of unique query terms found
-//            //Basically the matching score in layman terms
-//            QueryScorer scorer = new QueryScorer(this.query);
-//
-//            //used to markup highlighted terms found in the best sections of a text
-//            Highlighter highlighter = new Highlighter(htmlFormatter, scorer);
-//
-//            //It breaks text up into same-size texts but does not split up spans
-//            Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 10);
-//
-//            //set fragmenter to highlighter
-//            highlighter.setTextFragmenter(fragmenter);
+            //Uses HTML &lt;B&gt;&lt;/B&gt; tag to highlight the searched terms
+            SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter("<mark style='background-color: yellow;'>", "</mark>");
+
+            //It scores text fragments by the number of unique query terms found
+            //Basically the matching score in layman terms
+            QueryScorer scorer = new QueryScorer(this.query);
+
+            //used to markup highlighted terms found in the best sections of a text
+            Highlighter highlighter = new Highlighter(htmlFormatter, scorer);
+
+            //It breaks text up into same-size texts but does not split up spans
+            Fragmenter fragmenter = new SimpleSpanFragmenter(scorer, 100);
+
+            //set fragmenter to highlighter
+            highlighter.setTextFragmenter(fragmenter);
 
             for(int i=(page-1)*10;i<hits.length;++i) {
                 int docId = hits[i].doc;    // lucene docID
@@ -100,17 +100,44 @@ public class MyIndexReader {
                 // build result, indexed by course ID
                 course.setScore(hits[i].score);
 
-//                //Create token stream
-//                TokenStream stream = TokenSources.getAnyTokenStream(indexReader, docId, "description", analyzer);
-//
-//                //Get highlighted text fragments
-//                String[] frag = highlighter.getBestFragments(stream, course.getDescription(), 5);
-//                course.setHighlightFrag(String.join("...", frag));
+                //Create token stream
+                TokenStream desStream = TokenSources.getAnyTokenStream(indexReader, docId, "description", analyzer);
+
+                //Get highlighted text fragments
+                String[] desFrag = highlighter.getBestFragments(desStream, course.getDescription(), 100);
+                course.setHighlightFrag(String.join("...", desFrag));
+                desStream.reset();
+                desStream.close();
+
+
+                TokenStream deptStream = TokenSources.getAnyTokenStream(indexReader, docId, "dept", analyzer);
+                String[] deptFrag = highlighter.getBestFragments(deptStream, course.getDept(), 10);
+                course.setDept(String.join(" ", deptFrag));
+                deptStream.reset();
+                deptStream.close();
+
+                TokenStream numberStream = TokenSources.getAnyTokenStream(indexReader, docId, "number", analyzer);
+                String[] numberFrag = highlighter.getBestFragments(numberStream, course.getNumber()+"", 10);
+                course.setNumber(String.join(" ", numberFrag));
+                numberStream.reset();
+                numberStream.close();
+
+                TokenStream nameStream = TokenSources.getAnyTokenStream(indexReader, docId, "name", analyzer);
+                String[] nameFrag = highlighter.getBestFragments(nameStream, course.getName(), 10);
+                course.setName(String.join(" ", nameFrag));
+                nameStream.reset();
+                nameStream.close();
+
+                TokenStream instructorStream = TokenSources.getAnyTokenStream(indexReader, docId, "instructor", analyzer);
+                String[] instructorFrag = highlighter.getBestFragments(instructorStream, course.getInstructor(), 10);
+                course.setInstructor(String.join(" ", instructorFrag));
+                instructorStream.reset();
+                instructorStream.close();
 
                 res.add(course);
             }
 
-        } catch (IOException | ParseException | CloneNotSupportedException e) {
+        } catch (IOException | ParseException | CloneNotSupportedException | InvalidTokenOffsetsException e) {
             e.printStackTrace();
         }
         return res;

@@ -40,10 +40,6 @@ public class CourseSearchApplication {
     public void initialize() throws URISyntaxException, InvalidKeyException, StorageException, IOException {
         RAMDirectory ramDirectory = new RAMDirectory();
 
-        // normalized data
-//        MyNormalize myNormalize = new MyNormalize(this.connectionKey, this.containerName, this.containerNameAfterIndex, analyzer);
-//        myNormalize.normalize();
-
         AzureBlob azureBlobAfterNormalize = new AzureBlob(this.connectionKey, this.containerName);
         MyIndexWriter myIndexWriter = new MyIndexWriter(azureBlobAfterNormalize, ramDirectory, analyzer);
         // create the index, return the corpus cache

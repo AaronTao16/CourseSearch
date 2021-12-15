@@ -43,8 +43,8 @@
 
 <body>
     <div class="container">
-        <div style="text-align: center;">
-            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here" >
+        <div style="text-align: center;" id="search">
+            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here"  >
         </div>
         <div class="row">
             <div class="col-md-3 c-mt-20">
@@ -124,18 +124,18 @@
                             </div>
                             <div class="col-md-8">
                                 <h5 class="family">${course.name}</h5>
-<%--                                <c:if test="${course.highlightFrag != ''}">--%>
-<%--                                <p>--%>
-<%--                                    ${course.highlightFrag}...--%>
-<%--                                    &lt;%&ndash;.substring(0, course.description.length()/2)&ndash;%&gt;--%>
-<%--                                </p>--%>
-<%--                                </c:if>--%>
+                                <c:if test="${course.highlightFrag != ''}">
+                                <p>
+                                    ${course.highlightFrag}...
+                                    <%--.substring(0, course.description.length()/2)--%>
+                                </p>
+                                </c:if>
 
-<%--                                <c:if test="${course.highlightFrag == ''}">--%>
+                                <c:if test="${course.highlightFrag == ''}">
                                     <p>
                                             ${course.description}
                                     </p>
-<%--                                </c:if>--%>
+                                </c:if>
                             </div>
 
                             <div class="row">
