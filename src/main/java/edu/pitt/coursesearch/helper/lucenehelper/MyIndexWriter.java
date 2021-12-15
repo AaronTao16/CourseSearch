@@ -52,6 +52,7 @@ public class MyIndexWriter {
         // facet index writer
         this.facetWriter = new DirectoryTaxonomyWriter(facetDirectory);
         this.facetConfig = new FacetsConfig();
+        this.facetConfig.setMultiValued("day", true);
     }
 
     // main index routine
@@ -160,6 +161,12 @@ public class MyIndexWriter {
                     document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
                     // facet fields
                     document.add(new FacetField("grad", newCourse.isGrad() ? "true" : "false"));
+                    // days
+                    for (String day : newCourse.getDays()) {
+                        if (day.length() != 0) {
+                            document.add(new FacetField("day",day));
+                        }
+                    }
 
                     this.documentList.add(facetConfig.build(facetWriter, document));
 

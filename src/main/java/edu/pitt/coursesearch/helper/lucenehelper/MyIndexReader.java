@@ -34,6 +34,7 @@ public class MyIndexReader {
 
     private IndexReader indexReader;
     private TaxonomyReader facetReader;
+    private FacetsConfig facetConfig;
     private final IndexSearcher searcher;
     private final Analyzer analyzer;
     private Query query;
@@ -62,6 +63,8 @@ public class MyIndexReader {
         }
         this.searcher = new IndexSearcher(this.indexReader);
         this.searcher.setSimilarity(new ClassicSimilarity());
+        this.facetConfig = new FacetsConfig();
+        this.facetConfig.setMultiValued("day", true);
     }
 
     // main search function
@@ -94,7 +97,7 @@ public class MyIndexReader {
             }
 
             // collect related facets
-            Facets facets = new FastTaxonomyFacetCounts(this.facetReader, new FacetsConfig(), fc);
+            Facets facets = new FastTaxonomyFacetCounts(this.facetReader, this.facetConfig, fc);
             List<FacetResult> facetResults = facets.getAllDims(50);
             facetBeans = getFacets(facetResults);
 
@@ -121,7 +124,7 @@ public class MyIndexReader {
             this.query = new MultiFieldQueryParser(fieldsToSearch, analyzer).parse(query);
 
             // create DrillDownQuery from base query
-            DrillDownQuery drillDownQuery = new DrillDownQuery(new FacetsConfig(), this.query);
+            DrillDownQuery drillDownQuery = new DrillDownQuery(this.facetConfig, this.query);
 
             // add dimensions to drill down
             for(int i = 0; i <= dimensions.length - 2; i+=2) {
@@ -146,7 +149,7 @@ public class MyIndexReader {
             }
 
             // collect related facets
-            Facets facets = new FastTaxonomyFacetCounts(this.facetReader, new FacetsConfig(), fc);
+            Facets facets = new FastTaxonomyFacetCounts(this.facetReader, this.facetConfig, fc);
             List<FacetResult> facetResults = facets.getAllDims(50);
             facetBeans = getFacets(facetResults);
 
