@@ -48,12 +48,12 @@
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
     <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-    <div class="container">
+    <div class="container pb-3">
         <form style="text-align: center;" id="search" action="/search" method="get" class="input-group input-group-lg w-75 mt-3 mx-auto">
             <input id="searchInput" class="form-control" type="text" placeholder=" Enter your search here" name="query" aria-describedby="inputGroup-sizing-lg">
             <button class="btn btn-outline-secondary" type="submit" id="button-addon1">Search</button>
         </form>
-        <p class="text-secondary" style="text-align: right; margin-right: 200px; margin-bottom: 0"><em>${courseList.size()} search results (${time/1000})</em></p>
+        <p class="text-secondary" style="text-align: right; margin-right: 200px; margin-bottom: 0"><em>${courseList.size()} search results (${time/1000} seconds)</em></p>
         <div class="row">
             <div class="col-md-3 c-mt-20">
                 <br>
