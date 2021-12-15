@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("")
 public class CourseController {
@@ -23,7 +21,7 @@ public class CourseController {
     }
 
     @GetMapping("/search")
-    public String Query(@RequestParam("query") final String query, @RequestParam(value = "facet", required = false) final List<String> facets, ModelMap modelMap){
+    public String Query(@RequestParam("query") final String query, @RequestParam(value = "facet", required = false) final String[] facets, ModelMap modelMap){
         if (facets == null) {
             // non-faceted initial search
             SearchResult result = courseSearchService.getSearchResult(query);
@@ -32,8 +30,7 @@ public class CourseController {
         }
         else {
             // faceted search
-            String[] f = (String[]) facets.toArray();
-            SearchResult result = courseSearchService.getDrillDownResults(query, f);
+            SearchResult result = courseSearchService.getDrillDownResults(query, facets);
             modelMap.put("courseList", result.getCourseList());
             modelMap.put("facetList", result.getFacetResultList());
         }

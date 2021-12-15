@@ -73,9 +73,9 @@
                                     </c:when>
                                 </c:choose>
                             </strong>
-                            <div class="list-group mb-3">
+                            <div id="facet-group" class="list-group mb-3">
                                 <c:forEach items="${facet.labelValues}" var="labelValue">
-                                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between">
+                                    <button data-category="${facet.category}" data-label="${labelValue.key}" type="button" class="list-group-item list-group-item-action d-flex justify-content-between">
                                         <span>${labelValue.key}</span>
                                         <span class="badge bg-primary rounded-pill">${labelValue.value}</span>
                                     </button>

@@ -1,42 +1,16 @@
-var prevValue = 0;
-var currentValue;
-if (currentValue === undefined) currentValue = 0;
-var httpRequest;
+window.addEventListener('load', function (e) {
+    // register handlers for facet buttons
+    let facetButtons = document.querySelectorAll('#facet-group button');
+    facetButtons.forEach(function (element) {
+        element.addEventListener('click', onFacetClick);
+    });
+});
 
-function handleClick(myRadio) {
-    // alert('Old value: ' + currentValue);
-    // alert('New value: ' + myRadio.value);
-    prevValue = currentValue;
-    currentValue = myRadio.value;
-    if(prevValue === currentValue) return
-
-    httpRequest = new XMLHttpRequest();
-
-    if (!httpRequest) {
-        console.log('Giving up :( Cannot create an XMLHTTP instance');
-        return false;
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = urlParams.get('query')
-    console.log(query)
-    httpRequest.onreadystatechange = alertContents;
-    httpRequest.open('GET', '/search?query=' + query + " " + currentValue);
-    httpRequest.send();
-}
-
-function alertContents() {
-    try {
-        if (httpRequest.readyState === XMLHttpRequest.DONE) {
-            if (httpRequest.status === 200) {
-                console.log(httpRequest.responseText)
-                // ${courseList} = httpRequest.responseText;
-            } else {
-                alert('There was a problem with the request.');
-            }
-        }
-    }
-    catch( e ) {
-        alert('Caught Exception: ' + e.description);
-    }
+// facet click handler
+function onFacetClick(e) {
+    let category = this.dataset.category;
+    let label = this.dataset.label;
+    let currentURL = window.location.href;
+    let redirectURL = `${currentURL}&facet=${encodeURIComponent(category)}&facet=${encodeURIComponent(label)}`;
+    window.location.href = redirectURL;
 }
