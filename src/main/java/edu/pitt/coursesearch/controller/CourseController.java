@@ -22,6 +22,7 @@ public class CourseController {
 
     @GetMapping("/search")
     public String Query(@RequestParam("query") final String query, @RequestParam(value = "facet", required = false) final String[] facets, ModelMap modelMap){
+        long start = System.currentTimeMillis();
         if (facets == null) {
             // non-faceted initial search
             SearchResult result = courseSearchService.getSearchResult(query);
@@ -34,6 +35,8 @@ public class CourseController {
             modelMap.put("courseList", result.getCourseList());
             modelMap.put("facetList", result.getFacetResultList());
         }
+        long end = System.currentTimeMillis();
+        modelMap.put("time", end-start);
 
         return "srp";
     }

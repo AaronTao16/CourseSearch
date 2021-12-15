@@ -1,3 +1,4 @@
+<jsp:useBean id="time" scope="request" type="java.lang.Long"/>
 <jsp:useBean id="courseList" scope="request" type="java.util.List"/>
 <jsp:useBean id="facetList" scope="request" type="java.util.List"/>
 
@@ -14,7 +15,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <script src="../js/srp.js"></script>
-    <title>Second</title>
+    <title>University of Pittsburgh Class Search Engine</title>
     <style>
         .heading {
             margin-top: 50px;
@@ -48,9 +49,11 @@
     <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
     <div class="container">
-        <form style="text-align: center;" id="search" action="/search" method="get">
-            <input id="searchInput" class="heading" type="" placeholder=" Enter your search here" name="query">
+        <form style="text-align: center;" id="search" action="/search" method="get" class="input-group input-group-lg w-75 mt-3 mx-auto">
+            <input id="searchInput" class="form-control" type="text" placeholder=" Enter your search here" name="query" aria-describedby="inputGroup-sizing-lg">
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon1">Search</button>
         </form>
+        <p class="text-secondary" style="text-align: right; margin-right: 200px; margin-bottom: 0px"><em>${courseList.size()} search results (${time/1000} seconds)</em></p>
         <div class="row">
             <div class="col-md-3 c-mt-20">
                 <br>
