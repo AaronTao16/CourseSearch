@@ -162,11 +162,26 @@ public class MyIndexWriter {
                     document.add(new TextField("description", newCourse.getDescription(), Field.Store.NO));
                     document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
                     // facet fields
-                    document.add(new FacetField("grad", newCourse.isGrad() ? "true" : "false"));
+                    document.add(new FacetField("grad", newCourse.isGrad() ? "Graduate" : "Undergraduate"));
                     // days
                     for (String day : newCourse.getDays()) {
                         if (day.length() != 0) {
-                            document.add(new FacetField("day",day));
+                            switch (day) {
+                                case "M":
+                                    document.add(new FacetField("day","Monday"));
+                                    break;
+                                case "T":
+                                    document.add(new FacetField("day","Tuesday"));
+                                    break;
+                                case "W":
+                                    document.add(new FacetField("day","Wednesday"));
+                                    break;
+                                case "H":
+                                    document.add(new FacetField("day","Thursday"));
+                                    break;
+                                case "F":
+                                    document.add(new FacetField("day","Friday"));
+                            }
                         }
                     }
                     // required

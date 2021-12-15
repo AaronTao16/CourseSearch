@@ -57,10 +57,30 @@
                 <c:if test="${facetList.size() > 0}">
                     <c:forEach items="${facetList}" var="facet">
                         <c:if test="${facet.labelValues.size() > 1}">
-                            <strong>${facet.category}</strong><br>
-                            <c:forEach items="${facet.labelValues}" var="labelValue">
-                                <span>${labelValue.key} - ${labelValue.value}</span><br>
-                            </c:forEach>
+                            <strong class="d-block fs-5 mb-1">
+                                <c:choose>
+                                    <c:when test="${facet.category == 'grad'}">
+                                        Type
+                                    </c:when>
+                                    <c:when test="${facet.category == 'day'}">
+                                        Day
+                                    </c:when>
+                                    <c:when test="${facet.category == 'elective'}">
+                                        Elective in...
+                                    </c:when>
+                                    <c:when test="${facet.category == 'required'}">
+                                        Required in...
+                                    </c:when>
+                                </c:choose>
+                            </strong>
+                            <div class="list-group mb-3">
+                                <c:forEach items="${facet.labelValues}" var="labelValue">
+                                    <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between">
+                                        <span>${labelValue.key}</span>
+                                        <span class="badge bg-primary rounded-pill">${labelValue.value}</span>
+                                    </button>
+                                </c:forEach>
+                            </div>
                         </c:if>
                     </c:forEach>
                 </c:if>
