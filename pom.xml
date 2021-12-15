@@ -94,6 +94,12 @@
             <version>8.4.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-facet</artifactId>
+            <version>8.11.0</version>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

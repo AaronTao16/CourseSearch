@@ -1,4 +1,6 @@
 <jsp:useBean id="courseList" scope="request" type="java.util.List"/>
+<jsp:useBean id="facetList" scope="request" type="java.util.List"/>
+
 <%@ page contentType="text/html" pageEncoding="UTF-8" import="java.util.*" %>
 
 <!doctype html>
@@ -42,6 +44,9 @@
 </head>
 
 <body>
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
     <div class="container">
         <form style="text-align: center;" id="search" action="/search" method="get">
             <input class="heading" type="" placeholder=" Enter your search here" name="query">
@@ -49,57 +54,38 @@
         <div class="row">
             <div class="col-md-3 c-mt-20">
                 <br>
-                <form action="/search" method="get" name="levelForm">
-                    <input class="form-check-input" type="radio" name="level" value="All" onclick="handleClick(this)" checked>
-                    All Level<BR>
-                    <input class="form-check-input" type="radio" name="level" onclick="handleClick(this)" value="Undergraduate">
-                    Undergraduate<BR>
-                    <input class="form-check-input" type="radio" name="level" onclick="handleClick(this)" value="Graduate">
-                    Graduate<BR>
-<%--                    <input type="radio" name="id" value="All"> All Level<BR>--%>
-<%--                    <input type="radio" name="id" value="Undergraduate"> Undergraduate<BR>--%>
-<%--                    <input type="radio" name="id" value="Graduate"> Graduate<BR>--%>
-                </form>
-                <hr>
-<%--                <p>Spring</p>--%>
-<%--                <p>Summer</p>--%>
-<%--                <p>Fall</p>--%>
-<%--                <hr>--%>
-<%--                <p>Any Day</p>--%>
-<%--                <p>Mondays only</p>--%>
-<%--                <p>Tuesdays only</p>--%>
-<%--                <p>Wednesdays only</p>--%>
-<%--                <p>Thursdays only</p>--%>
-<%--                <p>Fridays only</p>--%>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="Any" value="option1" checked="checked">
-                    <label class="form-check-label" for="Any">Any Day</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="M" value="option2">
-                    <label class="form-check-label" for="M">M</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="Tu" value="option2">
-                    <label class="form-check-label" for="Tu">Tu</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="W" value="option2">
-                    <label class="form-check-label" for="W">W</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="Th" value="option2">
-                    <label class="form-check-label" for="Th">Th</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="F" value="option2">
-                    <label class="form-check-label" for="F">F</label>
-                </div>
-
+                <c:if test="${facetList.size() > 0}">
+                    <c:forEach items="${facetList}" var="facet">
+                        <c:if test="${facet.labelValues.size() > 1}">
+                            <strong class="d-block fs-5 mb-1">
+                                <c:choose>
+                                    <c:when test="${facet.category == 'grad'}">
+                                        Type
+                                    </c:when>
+                                    <c:when test="${facet.category == 'day'}">
+                                        Day
+                                    </c:when>
+                                    <c:when test="${facet.category == 'elective'}">
+                                        Elective in...
+                                    </c:when>
+                                    <c:when test="${facet.category == 'required'}">
+                                        Required in...
+                                    </c:when>
+                                </c:choose>
+                            </strong>
+                            <div id="facet-group" class="list-group mb-3">
+                                <c:forEach items="${facet.labelValues}" var="labelValue">
+                                    <button data-category="${facet.category}" data-label="${labelValue.key}" type="button" class="list-group-item list-group-item-action d-flex justify-content-between">
+                                        <span>${labelValue.key}</span>
+                                        <span class="badge bg-primary rounded-pill">${labelValue.value}</span>
+                                    </button>
+                                </c:forEach>
+                            </div>
+                        </c:if>
+                    </c:forEach>
+                </c:if>
             </div>
 
-            <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-            <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
             <div class="col-md-8">
 <%--                <jsp:useBean id="courseList" scope="request" type="java.util.List"/>--%>
                 <c:if test="${courseList.size() == 0}">

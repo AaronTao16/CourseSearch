@@ -39,17 +39,18 @@ public class CourseSearchApplication {
     @PostConstruct
     public void initialize() throws URISyntaxException, InvalidKeyException, StorageException, IOException {
         RAMDirectory ramDirectory = new RAMDirectory();
+        RAMDirectory facetDirectory = new RAMDirectory();
 
         // normalized data
 //        MyNormalize myNormalize = new MyNormalize(this.connectionKey, this.containerName, this.containerNameAfterIndex, analyzer);
 //        myNormalize.normalize();
 
         AzureBlob azureBlobAfterNormalize = new AzureBlob(this.connectionKey, this.containerName);
-        MyIndexWriter myIndexWriter = new MyIndexWriter(azureBlobAfterNormalize, ramDirectory, analyzer);
+        MyIndexWriter myIndexWriter = new MyIndexWriter(azureBlobAfterNormalize, ramDirectory, facetDirectory, analyzer);
         // create the index, return the corpus cache
         HashMap<Integer, Course> courseCache = myIndexWriter.createIndex();
 
-        MyIndexReader.getInstance(azureBlobAfterNormalize, ramDirectory, analyzer, courseCache);
+        MyIndexReader.getInstance(azureBlobAfterNormalize, ramDirectory, facetDirectory, analyzer, courseCache);
     }
 
 }

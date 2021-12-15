@@ -7,6 +7,9 @@ import edu.pitt.coursesearch.model.Section;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.facet.FacetField;
+import org.apache.lucene.facet.FacetsConfig;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -27,12 +30,13 @@ public class MyIndexWriter {
     private final List<Document> documentList;
     private List<String> OriginalList;
     private IndexWriter indexWriter;
+    private DirectoryTaxonomyWriter facetWriter;
+    private FacetsConfig facetConfig;
     private final AzureBlob azureBlob;
     public final RAMDirectory ramDirectory;
-    private FieldType type;
 
 
-    public MyIndexWriter(AzureBlob azureBlob, RAMDirectory ramDirectory, Analyzer analyzer) throws IOException {
+    public MyIndexWriter(AzureBlob azureBlob, RAMDirectory ramDirectory, RAMDirectory facetDirectory, Analyzer analyzer) throws IOException {
         this.azureBlob = azureBlob;
         this.ramDirectory = ramDirectory;
         this.documentList = new ArrayList<>();
@@ -45,11 +49,12 @@ public class MyIndexWriter {
         indexWriterConfig.setSimilarity(new ClassicSimilarity());
         // create IndexWriter instance (in-memory index)
         this.indexWriter = new IndexWriter(ramDirectory, indexWriterConfig);
-        // configure default field options (does this work?)g
-        type = new FieldType();
-        type.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
-        type.setStored(false);
-        type.setStoreTermVectors(true);
+        // facet index writer
+        this.facetWriter = new DirectoryTaxonomyWriter(facetDirectory);
+        this.facetConfig = new FacetsConfig();
+        this.facetConfig.setMultiValued("day", true);
+        this.facetConfig.setMultiValued("required", true);
+        this.facetConfig.setMultiValued("elective", true);
     }
 
     // main index routine
@@ -156,8 +161,39 @@ public class MyIndexWriter {
                     document.add(new TextField("name", newCourse.getName(), Field.Store.NO));
                     document.add(new TextField("description", newCourse.getDescription(), Field.Store.NO));
                     document.add(new TextField("instructor", newCourse.getInstructor(), Field.Store.NO));
+                    // facet fields
+                    document.add(new FacetField("grad", newCourse.isGrad() ? "Graduate" : "Undergraduate"));
+                    // days
+                    for (String day : newCourse.getDays()) {
+                        if (day.length() != 0) {
+                            switch (day) {
+                                case "M":
+                                    document.add(new FacetField("day","Monday"));
+                                    break;
+                                case "T":
+                                    document.add(new FacetField("day","Tuesday"));
+                                    break;
+                                case "W":
+                                    document.add(new FacetField("day","Wednesday"));
+                                    break;
+                                case "H":
+                                    document.add(new FacetField("day","Thursday"));
+                                    break;
+                                case "F":
+                                    document.add(new FacetField("day","Friday"));
+                            }
+                        }
+                    }
+                    // required
+                    for (String program : newCourse.getRequired()) {
+                        document.add(new FacetField("required",program));
+                    }
+                    // elective
+                    for (String program : newCourse.getElective()) {
+                        document.add(new FacetField("elective",program));
+                    }
 
-                    this.documentList.add(document);
+                    this.documentList.add(facetConfig.build(facetWriter, document));
 
                 }
             } catch (URISyntaxException | StorageException | IOException | JSONException e) {
@@ -190,6 +226,7 @@ public class MyIndexWriter {
     private void close() {
         try {
             this.indexWriter.close();
+            this.facetWriter.close();
         } catch (IOException e) {
 //            log.error("unable to close writer");
         } finally {
